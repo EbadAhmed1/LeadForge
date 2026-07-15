@@ -1,0 +1,72 @@
+[project]
+name = "saas-backend"
+version = "0.1.0"
+description = "B2B SaaS FastAPI backend"
+requires-python = ">=3.12"
+
+dependencies = [
+    # ─── Web Framework ─────────────────────────────────────────────────────────
+    "fastapi[standard]>=0.111.0",
+    "uvicorn[standard]>=0.29.0",
+
+    # ─── ORM & Database ────────────────────────────────────────────────────────
+    "sqlmodel>=0.0.19",           # Pydantic v2 + SQLAlchemy 2.0 unified
+    "asyncpg>=0.29.0",            # Async PostgreSQL driver
+    "psycopg2-binary>=2.9.9",     # Sync driver for Alembic migrations
+    "alembic>=1.13.1",
+
+    # ─── Settings & Validation ─────────────────────────────────────────────────
+    "pydantic-settings>=2.2.1",
+
+    # ─── Caching & Task Queue ──────────────────────────────────────────────────
+    "redis[hiredis]>=5.0.3",
+    "arq>=0.25.0",              # Async Redis Queue — background task worker
+    "tenacity>=8.2.0",         # Retry logic with exponential backoff
+
+    # ─── AI Engine ──────────────────────────────────────────────────────────────────────────
+    "langgraph>=0.2.0",        # Graph-based agentic orchestration
+    "langchain-openai>=0.1.0", # OpenAI LangChain integration
+    "langchain-anthropic>=0.1.0", # Anthropic Claude integration
+    "langchain-core>=0.2.0",   # Core LangChain primitives
+    "bleach>=6.1.0",           # HTML stripping for prompt injection guardrails
+
+    # ─── Auth (stubs — no logic yet) ───────────────────────────────────────────
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+
+    # ─── Observability ─────────────────────────────────────────────────────────
+    "structlog>=24.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.4.0",
+    "pyright>=1.1.360",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "httpx>=0.27.0",        # Async test client for FastAPI
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+# ─── Ruff Linter / Formatter ──────────────────────────────────────────────────
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+# ─── Pyright ──────────────────────────────────────────────────────────────────
+[tool.pyright]
+pythonVersion = "3.12"
+typeCheckingMode = "standard"
+
+# ─── Pytest ───────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
