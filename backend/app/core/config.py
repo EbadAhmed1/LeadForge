@@ -50,7 +50,12 @@ class Settings(BaseSettings):
     redis_max_connections: int = 20
 
     # ─── CORS ─────────────────────────────────────────────────────────────────
-    allowed_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    allowed_origins: str = "http://localhost:3000,http://localhost:5173"
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def cors_origins(self) -> list[str]:
+        return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
 
     # ─── Pagination ───────────────────────────────────────────────────────────
     default_page_size: int = 20
