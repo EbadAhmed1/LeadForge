@@ -20,8 +20,8 @@ import {
   AlertCircle
 } from "lucide-react";
 
-// API base URL - matching backend default configuration
-const API_BASE_URL = "http://localhost:8000/api/v1";
+// API base URL - uses env var in production, falls back to localhost for dev
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 interface DiscoverResponse {
   job_id: string;
