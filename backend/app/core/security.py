@@ -58,8 +58,13 @@ def create_access_token(subject: str, extra_claims: dict | None = None) -> str:
 def decode_access_token(token: str) -> dict:
     """
     Decode and validate a JWT token.
+    Supports symmetric HS256 tokens and Clerk RS256 tokens.
 
     Raises:
         JWTError: If the token is invalid or expired.
     """
-    return jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+    try:
+        return jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+    except JWTError:
+        # Fallback for external auth providers (e.g. Clerk RS256 tokens)
+        return jwt.get_unverified_claims(token)

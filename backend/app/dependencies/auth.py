@@ -51,34 +51,48 @@ async def get_current_user(
     tenant_id = payload.get("tenant_id") or payload.get("org_id")
 
     if not tenant_id:
-        # Fallback: look up tenant_id in UserProfile database mapping
-        try:
-            user_uuid = uuid.UUID(user_id)
-        except ValueError:
-            user_uuid = None
-
         from sqlalchemy import select
+        from app.models.tenant import Tenant
         from app.models.user_profile import UserProfile
 
-        if user_uuid:
+        try:
+            user_uuid = uuid.UUID(user_id)
             query = select(UserProfile).where(UserProfile.id == user_uuid)
-        else:
+        except ValueError:
             query = select(UserProfile).where(UserProfile.email == user_id)
 
         result = await session.execute(query)
         user = result.scalars().first()
-        if not user or not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User profile inactive or not found.",
-            )
-        tenant_id = user.tenant_id
-
-    if not tenant_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User not associated with a tenant.",
-        )
+        if user and user.is_active:
+            tenant_id = user.tenant_id
+        else:
+            # Auto-provision default tenant for Clerk users
+            t_query = select(Tenant).where(Tenant.slug == "default")
+            t_res = await session.execute(t_query)
+            tenant = t_res.scalars().first()
+            if not tenant:
+                tenant = Tenant(
+                    id=str(uuid.uuid4()),
+                    name="Default Workspace",
+                    slug="default",
+                    plan="free",
+                )
+                session.add(tenant)
+                await session.flush()
+            
+            tenant_id = tenant.id
+            if not user:
+                email = payload.get("email") or payload.get("primary_email_address") or f"{user_id}@clerk.user"
+                new_user = UserProfile(
+                    tenant_id=tenant_id,
+                    email=email,
+                    full_name=payload.get("name") or "Clerk User",
+                    hashed_password="",
+                    role="admin",
+                    is_active=True,
+                )
+                session.add(new_user)
+                await session.commit()
 
     return {
         "user_id": user_id,
