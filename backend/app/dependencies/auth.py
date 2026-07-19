@@ -55,11 +55,12 @@ async def get_current_user(
         from app.models.tenant import Tenant
         from app.models.user_profile import UserProfile
 
+        email = payload.get("email") or payload.get("primary_email_address") or f"{user_id}@clerk.user"
         try:
             user_uuid = uuid.UUID(user_id)
             query = select(UserProfile).where(UserProfile.id == user_uuid)
         except ValueError:
-            query = select(UserProfile).where(UserProfile.email == user_id)
+            query = select(UserProfile).where(UserProfile.email == email)
 
         result = await session.execute(query)
         user = result.scalars().first()
@@ -82,7 +83,6 @@ async def get_current_user(
             
             tenant_id = tenant.id
             if not user:
-                email = payload.get("email") or payload.get("primary_email_address") or f"{user_id}@clerk.user"
                 new_user = UserProfile(
                     tenant_id=tenant_id,
                     email=email,
