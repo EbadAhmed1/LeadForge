@@ -62,7 +62,7 @@ teams close deals faster using AI-driven lead scoring and automated outreach.
 - SDR Lead (Berlin)
 
 ## Contact Information
-- **Official Email:** hello@{company.lower().replace(' ', '')}.com
+- **Official Email:** hello@{company_email}.com
 - **Contact Number:** +1 (555) 0199
 
 ## Pain Points (visible on their blog)
@@ -90,7 +90,7 @@ manufacturing companies. Founded in 1998, they operate in a legacy market.
 - **Active Hiring:** None (Company-wide hiring freeze in effect).
 
 ## Contact Information
-- **Official Email:** info@{company.lower().replace(' ', '')}.corp
+- **Official Email:** info@{company_email}.corp
 - **Contact Number:** +1 (313) 555-0142
 """,
     """# {company} — Growth Marketing Agency
@@ -115,7 +115,7 @@ paid social and SEO for e-commerce DTC brands.
   - Paid Ads Specialist ( Austin, TX )
 
 ## Contact Information
-- **Official Email:** grow@{company.lower().replace(' ', '')}.co
+- **Official Email:** grow@{company_email}.co
 - **Contact Number:** +1 (512) 555-0177
 """,
 ]
@@ -138,9 +138,10 @@ async def _call_firecrawl(url: str) -> str:
     # Extract a pseudo-company name from the URL domain for variety
     domain = url.split("//")[-1].split("/")[0].replace("www.", "")
     company = domain.split(".")[0].replace("-", " ").title()
+    company_email = company.lower().replace(" ", "")
 
     template = random.choice(_MOCK_MARKDOWN_TEMPLATES)
-    return template.format(company=company)
+    return template.format(company=company, company_email=company_email)
 
 
 async def scraper_node(state: LeadState) -> dict:
