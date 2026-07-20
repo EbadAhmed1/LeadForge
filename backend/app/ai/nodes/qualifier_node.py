@@ -73,20 +73,15 @@ _qualification_chain = _build_llm()
 _QUALIFIER_SYSTEM_PROMPT = """You are an expert B2B sales qualification AI.
 
 Your task is to evaluate whether a scraped company profile is a good prospect
-for a SaaS product based on the tenant's profile.
+for the tenant's specific product/service offering, based on their Ideal Customer Profile (ICP) criteria.
 
-QUALIFICATION CRITERIA — score positively if:
-  - Company is in the software / technology / SaaS sector
-  - Company size: 50–500 employees (sweet spot)
-  - Company shows growth signals (hiring, recent funding, product launches)
-  - Pain points align with what the tenant offers
-  - Decision makers are reachable (SDR team exists, active on LinkedIn)
+You will be provided with:
+1. The Tenant's Product/Service Offering
+2. The Ideal Customer Profile (ICP) target criteria
 
-Score negatively if:
-  - Company is in a legacy / non-tech sector with no digital transformation signals
-  - Company explicitly stated they are not buying (cost-cutting, freeze)
-  - Company is too small (<10 employees) or enterprise-only (Fortune 100+)
-  - No identifiable pain points that the tenant's product can address
+You must evaluate the scraped company content against the offering and criteria:
+- Score positively if the company fits the target industry, size, and has clear use-cases/pain points that the tenant's offering solves.
+- Score negatively if there is a clear mismatch in industry, size, or business model, or if the company has no need for the offering.
 
 Be concise and specific. Base your verdict ONLY on the scraped text provided.
 Do not hallucinate company details not present in the text.
@@ -146,9 +141,22 @@ async def qualifier_node(
             "Ensure session_factory is passed via RunnableConfig in production."
         )
 
+    # ── Parse Tenant Custom Target Criteria ──────────────────────────────────
+    metadata_str = tenant_profile_dict.get("metadata") or "{}"
+    try:
+        metadata_dict = json.loads(metadata_str)
+        if isinstance(metadata_dict, str):
+            metadata_dict = json.loads(metadata_dict)
+    except Exception:
+        metadata_dict = {}
+
+    offering = metadata_dict.get("offering") or "A generic B2B SaaS product"
+    target_criteria = metadata_dict.get("target_criteria") or "Software / technology companies with 50-500 employees showing growth signals"
+
     tenant_summary = (
-        f"Tenant: {tenant_profile_dict.get('name', 'Unknown Tenant')} "
-        f"(Plan: {tenant_profile_dict.get('plan', 'unknown')})"
+        f"Tenant: {tenant_profile_dict.get('name', 'Unknown Tenant')}\n"
+        f"  - Offering: {offering}\n"
+        f"  - Target Criteria: {target_criteria}"
     )
 
     # ── Build the LLM prompt ─────────────────────────────────────────────────

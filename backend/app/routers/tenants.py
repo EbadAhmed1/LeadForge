@@ -48,6 +48,36 @@ async def list_tenants(
     return TenantList(items=[TenantRead.model_validate(t) for t in tenants], total=len(tenants))
 
 
+from app.dependencies.tenant import get_current_tenant_id
+
+
+@router.get(
+    "/current",
+    response_model=TenantRead,
+    summary="Get the current user's tenant",
+)
+async def get_current_tenant(
+    tenant_id: str = Depends(get_current_tenant_id),
+    svc: TenantService = Depends(_service),
+) -> TenantRead:
+    tenant = await svc.get_tenant(tenant_id)
+    return TenantRead.model_validate(tenant)
+
+
+@router.patch(
+    "/current",
+    response_model=TenantRead,
+    summary="Update the current user's tenant",
+)
+async def update_current_tenant(
+    data: TenantUpdate,
+    tenant_id: str = Depends(get_current_tenant_id),
+    svc: TenantService = Depends(_service),
+) -> TenantRead:
+    tenant = await svc.update_tenant(tenant_id, data)
+    return TenantRead.model_validate(tenant)
+
+
 @router.get(
     "/{tenant_id}",
     response_model=TenantRead,

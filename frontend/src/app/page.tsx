@@ -17,7 +17,9 @@ import {
   Mail,
   Building2,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Settings,
+  Save
 } from "lucide-react";
 
 // API base URL - uses env var in production, falls back to localhost for dev
@@ -49,6 +51,71 @@ export default function LeadDiscoveryDashboard() {
   const [url, setUrl] = useState("");
   const [jobId, setJobId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const [offering, setOffering] = useState("");
+  const [targetCriteria, setTargetCriteria] = useState("");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+
+  // Fetch current tenant profile
+  const { data: tenant, refetch: refetchTenant } = useQuery({
+    queryKey: ["currentTenant"],
+    queryFn: async () => {
+      const token = await getToken();
+      const res = await fetch(`${API_BASE_URL}/tenants/current`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) {
+        throw new Error("Failed to fetch tenant profile");
+      }
+      return res.json();
+    },
+    enabled: !!userId,
+  });
+
+  // Mutation to update tenant metadata
+  const updateTenantMutation = useMutation({
+    mutationFn: async (updatedData: { name?: string; metadata?: string }) => {
+      const token = await getToken();
+      const res = await fetch(`${API_BASE_URL}/tenants/current`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedData),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to update settings");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      refetchTenant();
+      setSettingsSaved(true);
+    },
+  });
+
+  useEffect(() => {
+    if (tenant?.metadata) {
+      try {
+        const meta = JSON.parse(tenant.metadata);
+        setOffering(meta.offering || "");
+        setTargetCriteria(meta.target_criteria || "");
+      } catch (e) {
+        console.error("Failed to parse metadata", e);
+      }
+    }
+  }, [tenant]);
+
+  useEffect(() => {
+    if (settingsSaved) {
+      const timer = setTimeout(() => setSettingsSaved(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [settingsSaved]);
 
   // Submit target URL to discover leads
   const discoverMutation = useMutation<DiscoverResponse, Error, string>({
@@ -141,8 +208,22 @@ export default function LeadDiscoveryDashboard() {
     }
   }
 
+  const hasConfiguredSettings = !!offering.trim() && !!targetCriteria.trim();
+
+  const handleSaveSettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    const metadataStr = JSON.stringify({
+      offering: offering.trim(),
+      target_criteria: targetCriteria.trim(),
+    });
+    updateTenantMutation.mutate({
+      metadata: metadataStr,
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasConfiguredSettings) return;
     if (!url.trim()) return;
     setJobId(null);
     discoverMutation.mutate(url.trim());
@@ -221,8 +302,100 @@ export default function LeadDiscoveryDashboard() {
             <p className="text-slate-400">Submit target domains to scan, verify ICP compliance, and construct campaign outreach drafts.</p>
           </div>
 
+          {/* CAMPAIGN SETTINGS */}
+          <section className="bg-slate-900/60 border border-slate-800 rounded-2xl shadow-xl backdrop-blur-sm overflow-hidden transition-all duration-300">
+            <button
+              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+              className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-800/20 transition cursor-pointer text-left"
+            >
+              <div className="flex items-center gap-3">
+                <Settings className={`h-5 w-5 ${hasConfiguredSettings ? 'text-indigo-400 animate-pulse' : 'text-amber-500 animate-bounce'}`} />
+                <div>
+                  <h3 className="font-semibold text-white">Campaign Profile & ICP Target</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {hasConfiguredSettings
+                      ? "Custom offering & ICP target configured. Click to adjust."
+                      : "🚨 Action Required: Set up your product/service offering and ICP criteria."}
+                  </p>
+                </div>
+              </div>
+              <span className="text-slate-400 text-xs px-2 py-1 rounded bg-slate-800 border border-slate-700">
+                {isSettingsOpen ? "Collapse" : "Expand"}
+              </span>
+            </button>
+
+            {isSettingsOpen && (
+              <form onSubmit={handleSaveSettings} className="px-6 pb-6 pt-2 border-t border-slate-800/80 flex flex-col gap-5">
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="offering" className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    What are you offering? (Your Product / Service)
+                  </label>
+                  <textarea
+                    id="offering"
+                    required
+                    rows={3}
+                    placeholder="Describe your product, service, or value proposition. (e.g. 'We offer custom luxury catering services for corporate events and private offices.')"
+                    value={offering}
+                    onChange={(e) => setOffering(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-100 placeholder-slate-600 outline-none transition resize-none text-sm leading-relaxed"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="targetCriteria" className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Ideal Customer Profile (ICP) Target Criteria
+                  </label>
+                  <textarea
+                    id="targetCriteria"
+                    required
+                    rows={3}
+                    placeholder="Define who qualifies as a good lead. (e.g. 'Law firms, financial services, tech startups, size >50 employees, looking for high-end hospitality services.')"
+                    value={targetCriteria}
+                    onChange={(e) => setTargetCriteria(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-100 placeholder-slate-600 outline-none transition resize-none text-sm leading-relaxed"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between gap-4 mt-2">
+                  <div className="text-xs text-slate-500">
+                    * AI uses this profile to scrape and automatically qualify domains.
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={updateTenantMutation.isPending}
+                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-semibold rounded-xl flex items-center gap-2 transition shadow-lg shadow-indigo-600/10 cursor-pointer disabled:cursor-not-allowed text-sm"
+                  >
+                    {updateTenantMutation.isPending ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 animate-spin" /> Saving...
+                      </>
+                    ) : settingsSaved ? (
+                      <>
+                        <Check className="h-4 w-4 text-emerald-400" /> Saved successfully!
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4" /> Save Profile
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+          </section>
+
           {/* URL SUBMISSION FORM */}
           <section className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
+            {!hasConfiguredSettings && (
+              <div className="mb-5 flex items-start gap-3 text-amber-400 bg-amber-950/20 border border-amber-900/40 p-4 rounded-xl text-sm leading-relaxed animate-fade-in">
+                <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold block mb-0.5">Campaign Profile Missing</span>
+                  To start lead discovery, please expand the <strong className="text-amber-300">Campaign Profile & ICP Target</strong> panel above, describe what you offer, and save your target customer criteria.
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
@@ -231,16 +404,17 @@ export default function LeadDiscoveryDashboard() {
                 <input
                   type="url"
                   required
+                  disabled={!hasConfiguredSettings}
                   placeholder="https://company.com/about-us"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-100 placeholder-slate-500 outline-none transition"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-100 placeholder-slate-500 outline-none transition disabled:bg-slate-950/40 disabled:border-slate-900 disabled:text-slate-700 disabled:placeholder-slate-800 disabled:cursor-not-allowed"
                 />
               </div>
               <button
                 type="submit"
-                disabled={discoverMutation.isPending || (jobStatus && jobStatus.status === "in_progress")}
-                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:bg-slate-800 disabled:text-slate-500 font-semibold rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-600/10 cursor-pointer disabled:cursor-not-allowed"
+                disabled={!hasConfiguredSettings || discoverMutation.isPending || (jobStatus && jobStatus.status === "in_progress")}
+                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:bg-slate-800/80 disabled:text-slate-600 font-semibold rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-600/10 cursor-pointer disabled:cursor-not-allowed"
               >
                 {discoverMutation.isPending ? (
                   <>

@@ -50,10 +50,14 @@ class TenantRead(BaseModel):
     slug: str
     plan: str
     is_active: bool
+    metadata_: Optional[str] = Field(None, serialization_alias="metadata")
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = {
+        "from_attributes": True,
+        "populate_by_name": True,
+    }
 
 
 class TenantList(BaseModel):
