@@ -70,10 +70,11 @@ def _build_llm():
 # Build once at import time (not per-request) to reuse the client connection.
 _qualification_chain = _build_llm()
 
-_QUALIFIER_SYSTEM_PROMPT = """You are an expert B2B sales qualification AI.
+_QUALIFIER_SYSTEM_PROMPT = """You are an expert B2B sales qualification and company intelligence AI.
 
-Your task is to evaluate whether a scraped company profile is a good prospect
-for the tenant's specific product/service offering, based on their Ideal Customer Profile (ICP) criteria.
+Your task is to:
+1. Evaluate whether a scraped company profile is a good prospect for the tenant's specific product/service offering, based on their Ideal Customer Profile (ICP) criteria.
+2. Extract valuable structured business insights from the scraped text (such as annual turnover/revenue, locations, hiring plans, dominated sectors, key partnerships, contact info, and expanding teams).
 
 You will be provided with:
 1. The Tenant's Product/Service Offering
@@ -83,8 +84,7 @@ You must evaluate the scraped company content against the offering and criteria:
 - Score positively if the company fits the target industry, size, and has clear use-cases/pain points that the tenant's offering solves.
 - Score negatively if there is a clear mismatch in industry, size, or business model, or if the company has no need for the offering.
 
-Be concise and specific. Base your verdict ONLY on the scraped text provided.
-Do not hallucinate company details not present in the text.
+Under the 'insights' field, extract all available company facts. If any specific detail (like phone or email) is not found in the scraped content, set its value to null. Do not guess or hallucinate these values.
 """
 
 
@@ -196,6 +196,7 @@ async def qualifier_node(
             "qualification_reason": (
                 f"{result.reason} (confidence: {result.confidence_score:.0%})"
             ),
+            "business_insights": result.insights.model_dump(),
         }
 
     except Exception as exc:
@@ -204,5 +205,6 @@ async def qualifier_node(
             "tenant_profile": tenant_profile_dict,
             "is_qualified": False,
             "qualification_reason": None,
+            "business_insights": None,
             "pipeline_error": f"Qualifier LLM error: {exc}",
         }

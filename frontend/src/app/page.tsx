@@ -19,7 +19,12 @@ import {
   FileText,
   AlertCircle,
   Settings,
-  Save
+  Save,
+  MapPin,
+  TrendingUp,
+  Handshake,
+  Briefcase,
+  Phone
 } from "lucide-react";
 
 // API base URL - uses env var in production, falls back to localhost for dev
@@ -577,6 +582,94 @@ export default function LeadDiscoveryDashboard() {
                     )}
                   </div>
                 </div>
+
+                 {/* Business Insights Card */}
+                {parsedResult.business_insights && (
+                  <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col gap-4">
+                    <h3 className="font-bold text-lg text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+                      <Sparkles className="h-5 w-5 text-indigo-400" /> Target Business Insights
+                    </h3>
+
+                    <div className="grid grid-cols-1 gap-4 text-sm">
+                      {/* Turnover */}
+                      <div className="flex gap-3 items-start bg-slate-950 p-3.5 rounded-xl border border-slate-800/80">
+                        <span className="text-emerald-400 font-extrabold text-base shrink-0 select-none">$</span>
+                        <div>
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block">Annual Turnover / Revenue</span>
+                          <span className="text-slate-200 mt-0.5 block">{parsedResult.business_insights.annual_turnover || "Not found on page"}</span>
+                        </div>
+                      </div>
+
+                      {/* Locations */}
+                      <div className="flex gap-3 items-start bg-slate-950 p-3.5 rounded-xl border border-slate-800/80">
+                        <MapPin className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block">Locations & Headquarters</span>
+                          <span className="text-slate-200 mt-0.5 block">{parsedResult.business_insights.locations || "Not found on page"}</span>
+                        </div>
+                      </div>
+
+                      {/* Dominated Sectors */}
+                      <div className="flex gap-3 items-start bg-slate-950 p-3.5 rounded-xl border border-slate-800/80">
+                        <TrendingUp className="h-4 w-4 text-sky-400 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block">Market Sectors</span>
+                          <span className="text-slate-200 mt-0.5 block">{parsedResult.business_insights.dominated_sectors || "Not found on page"}</span>
+                        </div>
+                      </div>
+
+                      {/* Partnerships */}
+                      <div className="flex gap-3 items-start bg-slate-950 p-3.5 rounded-xl border border-slate-800/80">
+                        <Handshake className="h-4 w-4 text-violet-400 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block">Key Partnerships / Clients</span>
+                          <span className="text-slate-200 mt-0.5 block">{parsedResult.business_insights.partnerships || "Not found on page"}</span>
+                        </div>
+                      </div>
+
+                      {/* Expanding Teams */}
+                      <div className="flex gap-3 items-start bg-slate-950 p-3.5 rounded-xl border border-slate-800/80">
+                        <Building2 className="h-4 w-4 text-fuchsia-400 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block">Expanding Teams</span>
+                          <span className="text-slate-200 mt-0.5 block">{parsedResult.business_insights.expanding_teams || "Not found on page"}</span>
+                        </div>
+                      </div>
+
+                      {/* Active Hiring */}
+                      <div className="flex gap-3 items-start bg-slate-950 p-3.5 rounded-xl border border-slate-800/80">
+                        <Briefcase className="h-4 w-4 text-pink-400 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block">Active Hiring</span>
+                          <span className="text-slate-200 mt-0.5 block whitespace-pre-line text-xs">{parsedResult.business_insights.active_hiring || "Not found on page"}</span>
+                        </div>
+                      </div>
+
+                      {/* Contact Details */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+                        <div className="flex gap-2 items-center bg-slate-950 p-3.5 rounded-xl border border-slate-800/80">
+                          <Mail className="h-4 w-4 text-teal-400 shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block">Email</span>
+                            <span className="text-slate-200 text-xs mt-0.5 block truncate" title={parsedResult.business_insights.contact_email}>
+                              {parsedResult.business_insights.contact_email || "N/A"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2 items-center bg-slate-950 p-3.5 rounded-xl border border-slate-800/80">
+                          <Phone className="h-4 w-4 text-emerald-400 shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block">Phone</span>
+                            <span className="text-slate-200 text-xs mt-0.5 block truncate" title={parsedResult.business_insights.contact_phone}>
+                              {parsedResult.business_insights.contact_phone || "N/A"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Scraped Leads Detail Card */}
                 {parsedResult.mock_leads_found !== undefined && (

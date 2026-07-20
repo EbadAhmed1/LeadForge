@@ -46,23 +46,28 @@ _MOCK_MARKDOWN_TEMPLATES = [
 {company} is a fast-growing Series B SaaS company helping mid-market B2B sales
 teams close deals faster using AI-driven lead scoring and automated outreach.
 
-## Our Stack & Team
-- 120 employees, 40% in engineering
-- Tech stack: Python, React, PostgreSQL, AWS
-- Headquarters: San Francisco, CA
+## Financials & Scale
+- **Annual Turnover:** $24,500,000 ARR (Annual Recurring Revenue)
+- **Key Partnerships:** Strategic integration partnerships with Salesforce, HubSpot, and AWS.
 
-## Recent News
-We just raised $28M Series B led by Sequoia Capital (Jan 2025).
-Looking to expand our go-to-market team from 15 to 35 AEs this year.
+## Our Stack, Locations & Team
+- **Headquarters:** San Francisco, California, USA
+- **Regional Offices:** London (UK) and Berlin (Germany)
+- **Team Size:** 120 employees, 40% in engineering
+- **Expanding Teams:** Engineering and Sales/GTM teams are expanding rapidly.
+
+## Active Hiring
+- Senior React Frontend Developer (London)
+- Account Executives (San Francisco)
+- SDR Lead (Berlin)
+
+## Contact Information
+- **Official Email:** hello@{company.lower().replace(' ', '')}.com
+- **Contact Number:** +1 (555) 0199
 
 ## Pain Points (visible on their blog)
 Their VP of Sales mentioned in a recent webinar: "We are drowning in unqualified
 leads. Our SDRs spend 60% of their time on research instead of selling."
-
-## Ideal customer profile signals
-- Revenue: $10M–$50M ARR
-- Sales team: 10–50 reps
-- Currently using Salesforce CRM
 """,
     """# {company} — Enterprise Data Management Solutions
 
@@ -70,19 +75,23 @@ leads. Our SDRs spend 60% of their time on research instead of selling."
 {company} provides on-premise data warehousing solutions for Fortune 500
 manufacturing companies. Founded in 1998, they operate in a legacy market.
 
-## Key Facts
-- 500+ employees, headquarters in Detroit, MI
-- Primarily serves automotive and heavy industry
-- 95% of revenue from multi-year maintenance contracts on existing installs
-- CEO quoted: "We have no plans to move to the cloud."
+## Financials & Scale
+- **Annual Revenue:** Approximately $150,000,000 USD
+- **Dominating Sectors:** Heavy Industry, Automotive Manufacturing, and Aerospace.
+- **Key Partnerships:** Long-term integration partners with Oracle and SAP.
 
-## Technology
-Still running Oracle 11g and COBOL-based ETL pipelines.
-No modern API infrastructure.
+## Locations
+- **Headquarters:** Detroit, Michigan, USA
+- **Manufacturing Support Hubs:** Stuttgart (Germany) and Nagoya (Japan)
 
-## Sales signals
-No outbound SDR team. All sales via channel partners.
-No public pricing. RFP-only procurement process.
+## Technology & Teams
+- Still running Oracle 11g and COBOL-based ETL pipelines.
+- **Expanding Teams:** None. Currently restructuring and downsizing operations.
+- **Active Hiring:** None (Company-wide hiring freeze in effect).
+
+## Contact Information
+- **Official Email:** info@{company.lower().replace(' ', '')}.corp
+- **Contact Number:** +1 (313) 555-0142
 """,
     """# {company} — Growth Marketing Agency
 
@@ -90,19 +99,24 @@ No public pricing. RFP-only procurement process.
 {company} is a boutique performance marketing agency specialising in
 paid social and SEO for e-commerce DTC brands.
 
-## Team
-12-person agency, all remote. Founded 2021.
-Average client size: $500k–$2M annual ad spend.
+## Financials & Scale
+- **Annual Turnover:** $3,200,000 USD (Ad management billing fees)
+- **Key Partnerships:** Google Premier Partner, Meta Business Partner, and Shopify Plus Partner.
+- **Dominating Sectors:** E-commerce DTC, Skincare & Beauty, and Wellness Brands.
 
-## Tech stack
-HubSpot, Klaviyo, Google Analytics 4, Shopify.
+## Locations
+- **Headquarters:** Austin, Texas, USA (Fully remote operations across 4 states)
 
-## Recent content
-Blog post: "How we scaled a skincare brand from $1M to $10M with TikTok ads."
+## Team & Hiring
+- 12-person agency, all remote. Founded 2021.
+- **Expanding Teams:** Client Services and Account Management.
+- **Active Hiring:** 
+  - 2 Junior Account Managers (Remote)
+  - Paid Ads Specialist ( Austin, TX )
 
-## Signals
-Hiring 2 junior account managers. Active on LinkedIn.
-Posted 3 job openings in the last 30 days.
+## Contact Information
+- **Official Email:** grow@{company.lower().replace(' ', '')}.co
+- **Contact Number:** +1 (512) 555-0177
 """,
 ]
 

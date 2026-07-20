@@ -230,6 +230,7 @@ async def scrape_and_process_lead(
     result_payload = {
         "is_qualified": final_state.get("is_qualified"),
         "qualification_reason": final_state.get("qualification_reason"),
+        "business_insights": final_state.get("business_insights"),
         "drafted_email": final_state.get("drafted_email"),
         "scraper_error": final_state.get("scraper_error"),
         "pipeline_error": final_state.get("pipeline_error"),

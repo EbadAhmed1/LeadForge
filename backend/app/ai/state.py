@@ -37,6 +37,7 @@ class LeadState(TypedDict):
     tenant_profile: Optional[dict]          # Serialised Tenant fields for the LLM prompt
     is_qualified: Optional[bool]            # True = proceed to drafting
     qualification_reason: Optional[str]     # LLM chain-of-thought explanation
+    business_insights: Optional[dict]       # Extracted business insights (turnover, locations, hiring, contacts)
 
     # ─── Drafter node outputs ─────────────────────────────────────────────────
     drafted_email: Optional[str]            # The personalised cold email body
@@ -51,6 +52,19 @@ class LeadState(TypedDict):
 # not API-facing types.
 
 from pydantic import BaseModel, Field
+
+
+class BusinessInsights(BaseModel):
+    """Structured insights extracted about the target business."""
+
+    annual_turnover: Optional[str] = Field(None, description="Annual turnover, revenue, or financial scale of the business.")
+    locations: Optional[str] = Field(None, description="Geographic locations, headquarters, or regions they operate in.")
+    active_hiring: Optional[str] = Field(None, description="Roles, teams, or departments they are actively hiring for.")
+    dominated_sectors: Optional[str] = Field(None, description="Sectors, markets, or industries they dominate or lead in.")
+    partnerships: Optional[str] = Field(None, description="Key partnerships, strategic alliances, or notable clients.")
+    contact_email: Optional[str] = Field(None, description="Official contact email address(es) found on the page.")
+    contact_phone: Optional[str] = Field(None, description="Official contact phone number(s) found on the page.")
+    expanding_teams: Optional[str] = Field(None, description="Specific teams or divisions they are actively expanding.")
 
 
 class QualificationResult(BaseModel):
@@ -73,6 +87,10 @@ class QualificationResult(BaseModel):
         ge=0.0,
         le=1.0,
         description="Model's confidence in the is_qualified verdict (0.0–1.0).",
+    )
+    insights: BusinessInsights = Field(
+        ...,
+        description="Extracted key business insights from the scraped text."
     )
 
 
