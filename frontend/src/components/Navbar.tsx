@@ -1,35 +1,67 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ArrowRight, Search, Bookmark, CreditCard, Sparkles } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ArrowRight, Search, Bookmark, CreditCard, LogOut, UserCheck } from "lucide-react";
+import LeadForgeLogo from "@/components/LeadForgeLogo";
+
+interface UserState {
+  email?: string;
+  name?: string;
+  signedIn?: boolean;
+}
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<UserState | null>(null);
+
+  useEffect(() => {
+    // Check localStorage for authenticated user session
+    const checkUser = () => {
+      try {
+        const stored = localStorage.getItem("leadforge_user");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.signedIn) {
+            setUser(parsed);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error("Error parsing user session:", err);
+      }
+      setUser(null);
+    };
+
+    checkUser();
+    // Listen for storage events (e.g. sign in from another tab or login form)
+    window.addEventListener("storage", checkUser);
+    return () => window.removeEventListener("storage", checkUser);
+  }, [pathname]);
+
+  const handleSignOut = () => {
+    try {
+      localStorage.removeItem("leadforge_user");
+    } catch (e) {
+      console.error(e);
+    }
+    setUser(null);
+    router.push("/");
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#E8E3D9] bg-[#FAF7F2]/90 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-lg bg-[#C2410C] flex items-center justify-center text-white font-serif font-bold text-xl shadow-xs group-hover:bg-[#9A3412] transition-colors">
-            L
-          </div>
-          <div>
-            <span className="font-serif text-xl font-bold tracking-tight text-[#1C1917]">
-              LeadForge
-            </span>
-            <span className="ml-2 text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-[#F5F2EB] border border-[#E8E3D9] text-[#78716C]">
-              Studio
-            </span>
-          </div>
-        </Link>
+        <LeadForgeLogo size="md" showTag={true} />
 
         {/* Streamlined Navigation Links */}
         <nav className="flex items-center gap-1 sm:gap-2">
           <Link
             href="/"
-            className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
               pathname === "/"
                 ? "bg-[#F5F2EB] text-[#1C1917] font-semibold border border-[#E8E3D9]"
                 : "text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB]"
@@ -41,7 +73,7 @@ export default function Navbar() {
 
           <Link
             href="/saved-leads"
-            className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
               pathname === "/saved-leads"
                 ? "bg-[#F5F2EB] text-[#1C1917] font-semibold border border-[#E8E3D9]"
                 : "text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB]"
@@ -53,7 +85,7 @@ export default function Navbar() {
 
           <Link
             href="/pricing"
-            className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
               pathname === "/pricing"
                 ? "bg-[#F5F2EB] text-[#1C1917] font-semibold border border-[#E8E3D9]"
                 : "text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB]"
@@ -64,21 +96,48 @@ export default function Navbar() {
           </Link>
         </nav>
 
-        {/* Action Buttons */}
+        {/* Action Buttons & Auth State */}
         <div className="hidden sm:flex items-center gap-3">
-          <Link
-            href="/sign-in"
-            className="text-xs font-semibold text-[#57534E] hover:text-[#1C1917] px-3 py-1.5 rounded-md hover:bg-[#F5F2EB] transition-colors"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 bg-[#C2410C] hover:bg-[#9A3412] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-xs"
-          >
-            Run AI Scraper
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          {user ? (
+            /* Signed In User Profile Badge */
+            <div className="flex items-center gap-2 bg-[#FFFFFF] border border-[#E8E3D9] p-1.5 pr-3 rounded-xl shadow-2xs">
+              <div className="w-7 h-7 rounded-lg bg-[#C2410C] text-white flex items-center justify-center font-serif font-bold text-xs">
+                {user.name ? user.name.charAt(0).toUpperCase() : "A"}
+              </div>
+              <div className="text-left">
+                <p className="text-xs font-semibold text-[#1C1917] leading-tight">
+                  {user.name || "Alex Mercer"}
+                </p>
+                <p className="text-[10px] text-[#047857] font-medium flex items-center gap-0.5">
+                  <UserCheck className="w-2.5 h-2.5" /> Signed In
+                </p>
+              </div>
+              <button
+                onClick={handleSignOut}
+                title="Sign Out"
+                className="ml-2 p-1 text-[#78716C] hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            /* Guest / Not Signed In */
+            <>
+              <Link
+                href="/sign-in"
+                className="text-xs font-semibold text-[#57534E] hover:text-[#1C1917] px-3 py-2 rounded-lg hover:bg-[#F5F2EB] transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/sign-in"
+                className="inline-flex items-center gap-2 bg-[#C2410C] hover:bg-[#9A3412] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-xs"
+              >
+                Get Started
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

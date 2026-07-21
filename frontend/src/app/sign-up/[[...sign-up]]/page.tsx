@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Mail, User } from "lucide-react";
+import LeadForgeLogo from "@/components/LeadForgeLogo";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -15,18 +16,34 @@ export default function SignUpPage() {
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    const userObj = {
+      email: email || "alex@company.com",
+      name: name || "Alex Mercer",
+      signedIn: true,
+    };
+    if (typeof window !== "undefined") {
+      localStorage.setItem("leadforge_user", JSON.stringify(userObj));
+    }
     setTimeout(() => {
       setLoading(false);
-      router.push("/dashboard");
-    }, 600);
+      router.push("/");
+    }, 400);
   };
 
   const handleDemoSignUp = () => {
     setLoading(true);
+    const userObj = {
+      email: "alex@cloudscale.io",
+      name: "Alex Mercer",
+      signedIn: true,
+    };
+    if (typeof window !== "undefined") {
+      localStorage.setItem("leadforge_user", JSON.stringify(userObj));
+    }
     setTimeout(() => {
       setLoading(false);
-      router.push("/dashboard");
-    }, 400);
+      router.push("/");
+    }, 300);
   };
 
   return (
@@ -40,12 +57,7 @@ export default function SignUpPage() {
           <ArrowLeft className="w-4 h-4" />
           Back to LeadForge
         </Link>
-        <div className="flex items-center gap-2 font-serif font-bold text-lg">
-          <div className="w-7 h-7 rounded bg-[#C2410C] text-white flex items-center justify-center font-serif text-sm">
-            L
-          </div>
-          LeadForge B2B Studio
-        </div>
+        <LeadForgeLogo size="sm" />
       </div>
 
       {/* Main Auth Container */}

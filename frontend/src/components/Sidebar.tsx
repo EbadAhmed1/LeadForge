@@ -1,11 +1,33 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, Bookmark, CreditCard, UserCheck, Shield } from "lucide-react";
 
+interface UserState {
+  email?: string;
+  name?: string;
+  signedIn?: boolean;
+}
+
 export default function Sidebar() {
   const pathname = usePathname();
+  const [user, setUser] = useState<UserState | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("leadforge_user");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.signedIn) {
+          setUser(parsed);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [pathname]);
 
   const navItems = [
     { name: "Lead Scraper Studio", href: "/", icon: Search },
@@ -18,12 +40,16 @@ export default function Sidebar() {
       <div className="space-y-6">
         {/* User Profile Card */}
         <div className="p-3 bg-[#FFFFFF] border border-[#E8E3D9] rounded-xl flex items-center gap-3 shadow-2xs">
-          <div className="w-9 h-9 rounded-lg bg-[#F5F2EB] border border-[#E8E3D9] flex items-center justify-center font-serif text-sm font-bold text-[#C2410C]">
-            L
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#EA580C] to-[#C2410C] text-white flex items-center justify-center font-serif text-sm font-bold shadow-2xs">
+            {user?.name ? user.name.charAt(0).toUpperCase() : "L"}
           </div>
           <div>
-            <p className="text-xs font-semibold text-[#1C1917]">My Lead Profile</p>
-            <p className="text-[10px] text-[#78716C]">Pro ICP Active</p>
+            <p className="text-xs font-semibold text-[#1C1917]">
+              {user?.name || "My Lead Profile"}
+            </p>
+            <p className="text-[10px] text-[#047857] font-medium flex items-center gap-0.5">
+              <UserCheck className="w-2.5 h-2.5" /> Pro ICP Active
+            </p>
           </div>
         </div>
 
