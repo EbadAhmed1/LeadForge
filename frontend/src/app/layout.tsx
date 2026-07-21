@@ -1,22 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Newsreader } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import Providers from "./providers";
 import "./globals.css";
 
-const geistSans = Geist({
+const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-mono",
+const newsreader = Newsreader({
+  variable: "--font-serif",
   subsets: ["latin"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Aegis AI — Lead Discovery & Outreach",
-  description: "B2B SaaS Lead Generation and Automated Outreach Platform",
+  title: "LeadForge — B2B Lead Intelligence & Precise Outreach",
+  description: "Automated B2B lead scraping, ICP qualification, and personalized cold outreach generation.",
 };
 
 export default function RootLayout({
@@ -28,9 +31,9 @@ export default function RootLayout({
     <ClerkProvider>
       <html
         lang="en"
-        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+        className={`${plusJakartaSans.variable} ${newsreader.variable} h-full antialiased`}
       >
-        <body className="min-h-full flex flex-col bg-slate-950 text-slate-100">
+        <body className="min-h-full flex flex-col bg-[#FAF7F2] text-[#1C1917]">
           <Providers>{children}</Providers>
         </body>
       </html>
