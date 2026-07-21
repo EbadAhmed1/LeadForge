@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, Sparkles, Compass, Target, CreditCard, LayoutDashboard } from "lucide-react";
+import { ArrowRight, Search, Bookmark, CreditCard, Sparkles } from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
-
-  const isDashboardRoute = pathname?.startsWith("/dashboard") || pathname?.startsWith("/icp-rules") || pathname?.startsWith("/studio");
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#E8E3D9] bg-[#FAF7F2]/90 backdrop-blur-md">
@@ -22,68 +20,64 @@ export default function Navbar() {
               LeadForge
             </span>
             <span className="ml-2 text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-[#F5F2EB] border border-[#E8E3D9] text-[#78716C]">
-              B2B Studio
+              Studio
             </span>
           </div>
         </Link>
 
-        {/* Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1">
+        {/* Streamlined Navigation Links */}
+        <nav className="flex items-center gap-1 sm:gap-2">
           <Link
-            href="/#features"
-            className="px-3.5 py-1.5 text-sm font-medium text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB] rounded-md transition-colors"
-          >
-            Features
-          </Link>
-          <Link
-            href="/icp-rules"
-            className={`px-3.5 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
-              pathname === "/icp-rules"
-                ? "bg-[#F5F2EB] text-[#1C1917] font-semibold"
+            href="/"
+            className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+              pathname === "/"
+                ? "bg-[#F5F2EB] text-[#1C1917] font-semibold border border-[#E8E3D9]"
                 : "text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB]"
             }`}
           >
-            <Target className="w-4 h-4 text-[#C2410C]" />
-            ICP Rules
+            <Search className={`w-4 h-4 ${pathname === "/" ? "text-[#C2410C]" : "text-[#78716C]"}`} />
+            Lead Scraper Studio
           </Link>
+
+          <Link
+            href="/saved-leads"
+            className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+              pathname === "/saved-leads"
+                ? "bg-[#F5F2EB] text-[#1C1917] font-semibold border border-[#E8E3D9]"
+                : "text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB]"
+            }`}
+          >
+            <Bookmark className={`w-4 h-4 ${pathname === "/saved-leads" ? "text-[#C2410C]" : "text-[#78716C]"}`} />
+            Saved Leads & Profile
+          </Link>
+
           <Link
             href="/pricing"
-            className={`px-3.5 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
               pathname === "/pricing"
-                ? "bg-[#F5F2EB] text-[#1C1917] font-semibold"
+                ? "bg-[#F5F2EB] text-[#1C1917] font-semibold border border-[#E8E3D9]"
                 : "text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB]"
             }`}
           >
-            <CreditCard className="w-4 h-4 text-[#57534E]" />
-            Pricing
-          </Link>
-          <Link
-            href="/dashboard"
-            className={`px-3.5 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
-              isDashboardRoute
-                ? "bg-[#F5F2EB] text-[#1C1917] font-semibold"
-                : "text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB]"
-            }`}
-          >
-            <LayoutDashboard className="w-4 h-4 text-[#57534E]" />
-            Workspace
+            <CreditCard className={`w-4 h-4 ${pathname === "/pricing" ? "text-[#C2410C]" : "text-[#78716C]"}`} />
+            Pricing & Plans
           </Link>
         </nav>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="hidden sm:flex items-center gap-3">
           <Link
             href="/sign-in"
-            className="text-sm font-medium text-[#57534E] hover:text-[#1C1917] px-3 py-1.5 rounded-md hover:bg-[#F5F2EB] transition-colors"
+            className="text-xs font-semibold text-[#57534E] hover:text-[#1C1917] px-3 py-1.5 rounded-md hover:bg-[#F5F2EB] transition-colors"
           >
             Sign In
           </Link>
           <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 bg-[#C2410C] hover:bg-[#9A3412] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-xs"
+            href="/"
+            className="inline-flex items-center gap-2 bg-[#C2410C] hover:bg-[#9A3412] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-xs"
           >
-            Open Workspace
-            <ArrowRight className="w-4 h-4" />
+            Run AI Scraper
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
