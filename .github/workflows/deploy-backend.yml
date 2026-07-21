@@ -1,0 +1,48 @@
+name: Deploy Backend to Production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - 'docker-compose.prod.yml'
+      - '.github/workflows/deploy-backend.yml'
+
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  deploy:
+    name: Deploy Backend via SSH
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Execute Remote SSH Commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+            echo "📁 Navigating to project directory (~/LeadForge)..."
+            cd ~/LeadForge
+            
+            echo "🧹 Cleaning git working tree on server..."
+            git reset --hard HEAD
+            git clean -fd
+            
+            echo "📥 Pulling latest code from GitHub..."
+            git pull origin main
+            
+            echo "🐳 Rebuilding and updating API & Worker containers..."
+            docker compose -f docker-compose.prod.yml up -d --build api worker
+            
+            echo "🗄️ Running Alembic database migrations..."
+            docker compose -f docker-compose.prod.yml exec -T api alembic upgrade head
+            
+            echo "🧹 Cleaning up unused Docker images..."
+            docker image prune -f
+            
+            echo "🎉 Backend deployment completed successfully!"
