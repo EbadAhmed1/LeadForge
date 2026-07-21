@@ -10,33 +10,21 @@
   --text-muted: #78716C;
   --accent-terracotta: #C2410C;
   --accent-terracotta-hover: #9A3412;
-  --badge-sage-bg: #ECFDF5;
-  --badge-sage-text: #047857;
-  --badge-sage-border: #A7F3D0;
 }
 
-@theme inline {
-  --color-bg-sand: #FAF7F2;
-  --color-bg-oat: #F5F2EB;
-  --color-bg-card: #FFFFFF;
-  --color-border-beige: #E8E3D9;
-  --color-text-espresso: #1C1917;
-  --color-text-stone: #57534E;
-  --color-text-muted: #78716C;
-  --color-terracotta: #C2410C;
-  --color-terracotta-hover: #9A3412;
-  --font-sans: var(--font-sans);
-  --font-serif: var(--font-serif);
+@theme {
+  --font-serif: var(--font-serif), Georgia, serif;
+  --font-sans: var(--font-sans), system-ui, sans-serif;
 }
 
 body {
-  background-color: var(--bg-sand);
-  color: var(--text-espresso);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  background-color: #FAF7F2;
+  color: #1C1917;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
 }
 
-.font-serif-heading {
-  font-family: var(--font-serif), Georgia, serif;
+h1, h2, h3, h4, .font-serif {
+  font-family: var(--font-serif), Georgia, Cambria, serif;
 }
 
 /* Custom scrollbar for warm aesthetic */
