@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowRight, Search, Bookmark, CreditCard, LogOut, UserCheck } from "lucide-react";
+import { ArrowRight, Search, Bookmark, CreditCard, LogOut, UserCheck, Sparkles } from "lucide-react";
 import LeadForgeLogo from "@/components/LeadForgeLogo";
 
 interface UserState {
@@ -18,7 +18,6 @@ export default function Navbar() {
   const [user, setUser] = useState<UserState | null>(null);
 
   useEffect(() => {
-    // Check localStorage for authenticated user session
     const checkUser = () => {
       try {
         const stored = localStorage.getItem("leadforge_user");
@@ -36,7 +35,6 @@ export default function Navbar() {
     };
 
     checkUser();
-    // Listen for storage events (e.g. sign in from another tab or login form)
     window.addEventListener("storage", checkUser);
     return () => window.removeEventListener("storage", checkUser);
   }, [pathname]);
@@ -63,7 +61,7 @@ export default function Navbar() {
             href="/"
             className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
               pathname === "/"
-                ? "bg-[#F5F2EB] text-[#1C1917] font-semibold border border-[#E8E3D9]"
+                ? "bg-[#FFFFFF] text-[#1C1917] font-semibold border border-[#E8E3D9] shadow-2xs"
                 : "text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB]"
             }`}
           >
@@ -75,7 +73,7 @@ export default function Navbar() {
             href="/saved-leads"
             className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
               pathname === "/saved-leads"
-                ? "bg-[#F5F2EB] text-[#1C1917] font-semibold border border-[#E8E3D9]"
+                ? "bg-[#FFFFFF] text-[#1C1917] font-semibold border border-[#E8E3D9] shadow-2xs"
                 : "text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB]"
             }`}
           >
@@ -87,7 +85,7 @@ export default function Navbar() {
             href="/pricing"
             className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
               pathname === "/pricing"
-                ? "bg-[#F5F2EB] text-[#1C1917] font-semibold border border-[#E8E3D9]"
+                ? "bg-[#FFFFFF] text-[#1C1917] font-semibold border border-[#E8E3D9] shadow-2xs"
                 : "text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB]"
             }`}
           >
@@ -100,8 +98,8 @@ export default function Navbar() {
         <div className="hidden sm:flex items-center gap-3">
           {user ? (
             /* Signed In User Profile Badge */
-            <div className="flex items-center gap-2 bg-[#FFFFFF] border border-[#E8E3D9] p-1.5 pr-3 rounded-xl shadow-2xs">
-              <div className="w-7 h-7 rounded-lg bg-[#C2410C] text-white flex items-center justify-center font-serif font-bold text-xs">
+            <div className="flex items-center gap-2.5 bg-[#FFFFFF] border border-[#E8E3D9] p-1.5 pr-3 rounded-xl shadow-2xs">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#EA580C] to-[#C2410C] text-white flex items-center justify-center font-serif font-bold text-xs shadow-xs">
                 {user.name ? user.name.charAt(0).toUpperCase() : "A"}
               </div>
               <div className="text-left">
@@ -109,7 +107,7 @@ export default function Navbar() {
                   {user.name || "Alex Mercer"}
                 </p>
                 <p className="text-[10px] text-[#047857] font-medium flex items-center gap-0.5">
-                  <UserCheck className="w-2.5 h-2.5" /> Signed In
+                  <UserCheck className="w-2.5 h-2.5" /> Pro Workspace
                 </p>
               </div>
               <button

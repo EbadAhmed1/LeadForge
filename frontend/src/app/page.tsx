@@ -17,7 +17,10 @@ import {
   ArrowRight,
   RefreshCw,
   Target,
-  Users,
+  Sparkles,
+  Layers,
+  Cpu,
+  CheckCircle2,
 } from "lucide-react";
 
 export default function LeadStudioPage() {
@@ -36,7 +39,17 @@ export default function LeadStudioPage() {
   // Scraper Input State
   const [targetDomain, setTargetDomain] = useState("vercel.com");
   const [isScraping, setIsScraping] = useState(false);
-  const [scrapeStep, setScrapeStep] = useState<number>(0); // 0: Idle, 1: Scraping, 2: Rating, 3: Drafting, 4: Complete
+  const [scrapeStep, setScrapeStep] = useState<number>(0);
+  const [selectedTone, setSelectedTone] = useState<"Executive" | "Solution-First" | "Challenger">("Solution-First");
+
+  // Sample Domains for Quick 1-Click Testing
+  const sampleDomains = [
+    { label: "vercel.com", domain: "vercel.com" },
+    { label: "stripe.com", domain: "stripe.com" },
+    { label: "linear.app", domain: "linear.app" },
+    { label: "supabase.com", domain: "supabase.com" },
+    { label: "datadoghq.com", domain: "datadoghq.com" },
+  ];
 
   // Scraped Lead Output Result State
   const [scrapedResult, setScrapedResult] = useState<{
@@ -47,12 +60,12 @@ export default function LeadStudioPage() {
     tech_stack: string[];
     pain_points: string[];
     decision_maker: string;
-    email_subject: string;
-    email_body: string;
+    email_subjects: Record<string, string>;
+    email_bodies: Record<string, string>;
   } | null>({
     company_name: "Vercel Inc.",
     domain: "vercel.com",
-    score: 94,
+    score: 96,
     reasoning: "High alignment with Cloud & Frontend Infrastructure ICP. Active deployment of Next.js edge networks and serverless middleware.",
     tech_stack: ["Next.js", "React", "TypeScript", "Vercel Edge Network", "AWS"],
     pain_points: [
@@ -60,8 +73,16 @@ export default function LeadStudioPage() {
       "Managing complex enterprise middleware routing rules",
     ],
     decision_maker: "VP of Engineering / Head of Developer Experience",
-    email_subject: "Streamlining Serverless Edge latency for Vercel Enterprise",
-    email_body: "Hi Sarah,\n\nI was following Vercel's latest Next.js release and noticed your team's focus on Edge middleware performance.\n\nWe engineered LeadForge to automatically diagnose and optimize high-concurrency Next.js serverless execution workflows without adding overhead.\n\nWould you be open to a 5-minute brief next Tuesday?",
+    email_subjects: {
+      "Executive": "Executive Brief: Edge latency optimization for Vercel Enterprise",
+      "Solution-First": "Streamlining Serverless Edge latency for Vercel Enterprise",
+      "Challenger": "Are serverless cold starts bottlenecking Vercel's enterprise traffic?",
+    },
+    email_bodies: {
+      "Executive": "Hi Sarah,\n\nI was following Vercel's latest Next.js release and noticed your team's focus on Edge middleware performance.\n\nWe engineered LeadForge to automatically diagnose and optimize high-concurrency Next.js serverless execution workflows without adding overhead.\n\nWould you be open to a 5-minute brief next Tuesday?",
+      "Solution-First": "Hi Sarah,\n\nNoticed Vercel's recent push into enterprise edge deployment. Cold start latency during peak concurrency remains a key challenge for Next.js architectures.\n\nOur team built an automated diagnostic workflow specifically designed to compress cold starts by 40%.\n\nLet's connect for 5 minutes if this aligns with your Q3 priorities.",
+      "Challenger": "Hi Sarah,\n\nMost cloud infrastructure teams lose up to 18% of peak conversions due to unoptimized serverless middleware latency.\n\nWe created a zero-overhead execution pipeline that guarantees low-latency edge routing.\n\nWorth a brief 5-minute chat?",
+    },
   });
 
   const [leadSaved, setLeadSaved] = useState(false);
@@ -76,38 +97,48 @@ export default function LeadStudioPage() {
   };
 
   // Handle Target Scrape Execution
-  const handleRunScrape = () => {
-    if (!targetDomain.trim()) return;
+  const handleRunScrape = (customDomain?: string) => {
+    const domainToScrape = customDomain || targetDomain;
+    if (!domainToScrape.trim()) return;
+
+    setTargetDomain(domainToScrape);
     setIsScraping(true);
     setScrapeStep(1);
 
-    // Simulate 3-step LangGraph execution
-    setTimeout(() => setScrapeStep(2), 1000);
-    setTimeout(() => setScrapeStep(3), 2000);
+    setTimeout(() => setScrapeStep(2), 900);
+    setTimeout(() => setScrapeStep(3), 1800);
     setTimeout(() => {
       setScrapeStep(4);
       setIsScraping(false);
 
-      // Generate dynamic output based on domain
-      const cleanDomain = targetDomain.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-      const companyName = cleanDomain.split(".")[0].toUpperCase() + " Technologies";
+      const cleanDomain = domainToScrape.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      const brandName = cleanDomain.split(".")[0];
+      const companyName = brandName.charAt(0).toUpperCase() + brandName.slice(1) + " Inc.";
 
       setScrapedResult({
         company_name: companyName,
         domain: cleanDomain,
-        score: Math.floor(Math.random() * 15) + 85, // 85 - 99 score
-        reasoning: `Matches saved profile criteria for ${profile.targetIndustries[0] || "B2B SaaS"}. Active cloud scaling infrastructure detected.`,
-        tech_stack: ["Kubernetes", "PostgreSQL", "React", "Docker", "Python"],
+        score: Math.floor(Math.random() * 12) + 87,
+        reasoning: `Matches saved ICP profile for ${profile.targetIndustries[0] || "B2B SaaS"}. Active cloud scaling infrastructure & high engineering headcount detected.`,
+        tech_stack: ["Kubernetes", "PostgreSQL", "React", "Docker", "Python", "TypeScript"],
         pain_points: [
           `Addressing ${profile.painPoints.split(",")[0] || "cloud latency bottlenecks"}`,
-          "Scaling high-throughput API endpoints",
+          "Scaling high-throughput API endpoints across multi-region clusters",
         ],
         decision_maker: profile.decisionMaker || "VP of Engineering",
-        email_subject: `Optimizing infrastructure workflows for ${companyName}`,
-        email_body: `Hi Alex,\n\nI was reviewing ${cleanDomain}'s tech stack and saw your team's recent infrastructure expansion.\n\nBased on your work with Kubernetes and cloud performance, I wanted to share how LeadForge helps engineering leaders streamline deployment velocity.\n\nLet's connect for 5 minutes if this aligns with your Q3 roadmap.`,
+        email_subjects: {
+          "Executive": `Executive Brief: Infrastructure velocity for ${companyName}`,
+          "Solution-First": `Optimizing deployment latency for ${companyName}`,
+          "Challenger": `Is infrastructure complexity delaying ${companyName}'s release cycles?`,
+        },
+        email_bodies: {
+          "Executive": `Hi Alex,\n\nI was reviewing ${cleanDomain}'s engineering stack and saw your team's recent cloud expansion.\n\nBased on your work with Kubernetes and cloud performance, I wanted to share how LeadForge helps engineering leaders streamline deployment velocity.\n\nLet's connect for 5 minutes if this aligns with your Q3 roadmap.`,
+          "Solution-First": `Hi Alex,\n\nNoticed ${companyName}'s focus on high-throughput backend scaling.\n\nWe engineered an automated diagnostic workflow specifically designed to reduce Kubernetes cluster latency during peak load spikes.\n\nWould you be open to a brief chat next week?`,
+          "Challenger": `Hi Alex,\n\nEngineering leaders at scaling B2B SaaS companies often spend 25% of sprint capacity managing cloud deployment overhead.\n\nOur system automates multi-region cluster optimization without agent overhead.\n\nWorth a 5-minute brief?`,
+        },
       });
       setLeadSaved(false);
-    }, 3000);
+    }, 2700);
   };
 
   // Handle Save Lead to Profile
@@ -118,7 +149,9 @@ export default function LeadStudioPage() {
   // Copy Email Draft
   const handleCopyEmail = () => {
     if (!scrapedResult) return;
-    navigator.clipboard.writeText(`Subject: ${scrapedResult.email_subject}\n\n${scrapedResult.email_body}`);
+    const subj = scrapedResult.email_subjects[selectedTone] || scrapedResult.email_subjects["Solution-First"];
+    const body = scrapedResult.email_bodies[selectedTone] || scrapedResult.email_bodies["Solution-First"];
+    navigator.clipboard.writeText(`Subject: ${subj}\n\n${body}`);
     setCopiedEmail(true);
     setTimeout(() => setCopiedEmail(false), 2000);
   };
@@ -140,21 +173,54 @@ export default function LeadStudioPage() {
                   Lead Scraper & Intelligence Studio
                 </h1>
                 <span className="px-2.5 py-0.5 text-[10px] uppercase font-bold rounded-full bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0]">
-                  ACTIVE STUDIO
+                  LIVE WORKSPACE
                 </span>
               </div>
               <p className="text-xs text-[#57534E] mt-1">
-                Configure your ICP profile, input target domains to scrape, get full AI intelligence dossiers, and save qualified leads directly to your profile.
+                Configure your saved ICP profile, input target domains to scrape, analyze AI dossiers, and save qualified leads directly.
               </p>
             </div>
 
             <Link
               href="/saved-leads"
-              className="px-4 py-2 bg-[#FFFFFF] border border-[#E8E3D9] hover:bg-[#F5F2EB] text-xs font-semibold rounded-xl text-[#1C1917] transition-colors inline-flex items-center gap-2 shadow-2xs shrink-0"
+              className="px-4 py-2.5 bg-[#FFFFFF] border border-[#E8E3D9] hover:bg-[#F5F2EB] text-xs font-semibold rounded-xl text-[#1C1917] transition-colors inline-flex items-center gap-2 shadow-2xs shrink-0"
             >
               <Bookmark className="w-4 h-4 text-[#C2410C]" />
               View Saved Leads Database
             </Link>
+          </div>
+
+          {/* Process Stepper Header */}
+          <div className="grid grid-cols-3 gap-3 text-xs">
+            <div className="p-3 bg-[#FFFFFF] border border-[#E8E3D9] rounded-xl flex items-center gap-2.5 shadow-2xs">
+              <div className="w-6 h-6 rounded-full bg-[#F5F2EB] text-[#C2410C] font-bold text-xs flex items-center justify-center border border-[#E8E3D9]">
+                1
+              </div>
+              <div>
+                <p className="font-semibold text-[#1C1917]">Target ICP Criteria</p>
+                <p className="text-[10px] text-[#78716C]">Saved Profile Rules</p>
+              </div>
+            </div>
+
+            <div className="p-3 bg-[#FFFFFF] border border-[#E8E3D9] rounded-xl flex items-center gap-2.5 shadow-2xs">
+              <div className="w-6 h-6 rounded-full bg-[#F5F2EB] text-[#C2410C] font-bold text-xs flex items-center justify-center border border-[#E8E3D9]">
+                2
+              </div>
+              <div>
+                <p className="font-semibold text-[#1C1917]">Scrape Domain</p>
+                <p className="text-[10px] text-[#78716C]">Web Signals Extraction</p>
+              </div>
+            </div>
+
+            <div className="p-3 bg-[#FFFFFF] border border-[#E8E3D9] rounded-xl flex items-center gap-2.5 shadow-2xs">
+              <div className="w-6 h-6 rounded-full bg-[#F5F2EB] text-[#C2410C] font-bold text-xs flex items-center justify-center border border-[#E8E3D9]">
+                3
+              </div>
+              <div>
+                <p className="font-semibold text-[#1C1917]">Scraped Dossier</p>
+                <p className="text-[10px] text-[#78716C]">Qualified Lead & Outreach</p>
+              </div>
+            </div>
           </div>
 
           {/* Section 1: My Saved Profile & ICP Criteria */}
@@ -257,21 +323,21 @@ export default function LeadStudioPage() {
 
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <div className="relative w-full">
-                <Globe className="w-4 h-4 absolute left-3.5 top-3 text-[#78716C]" />
+                <Globe className="w-4 h-4 absolute left-3.5 top-3.5 text-[#78716C]" />
                 <input
                   type="text"
-                  placeholder="Enter target URL or domain (e.g. stripe.com, vercel.com, cloudscale.io)..."
+                  placeholder="Enter target URL or domain (e.g. stripe.com, vercel.com, linear.app)..."
                   value={targetDomain}
                   onChange={(e) => setTargetDomain(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleRunScrape()}
-                  className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl text-[#1C1917] placeholder-[#78716C] focus:outline-none focus:border-[#C2410C]"
+                  className="w-full pl-10 pr-4 py-3 text-xs sm:text-sm bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl text-[#1C1917] placeholder-[#78716C] focus:outline-none focus:border-[#C2410C]"
                 />
               </div>
 
               <button
-                onClick={handleRunScrape}
+                onClick={() => handleRunScrape()}
                 disabled={isScraping}
-                className="w-full sm:w-auto px-6 py-2.5 bg-[#C2410C] hover:bg-[#9A3412] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-xs shrink-0 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3 bg-[#C2410C] hover:bg-[#9A3412] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-xs shrink-0 flex items-center justify-center gap-2"
               >
                 {isScraping ? (
                   <>
@@ -285,6 +351,22 @@ export default function LeadStudioPage() {
                   </>
                 )}
               </button>
+            </div>
+
+            {/* Quick Sample Domain Chips */}
+            <div className="flex items-center gap-2 text-xs text-[#78716C]">
+              <span className="font-semibold text-[11px] text-[#57534E]">Quick Test:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {sampleDomains.map((sample) => (
+                  <button
+                    key={sample.domain}
+                    onClick={() => handleRunScrape(sample.domain)}
+                    className="px-2.5 py-1 text-[11px] bg-[#FAF7F2] hover:bg-[#F5F2EB] border border-[#E8E3D9] rounded-md text-[#1C1917] font-mono transition-colors"
+                  >
+                    {sample.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Live Scraping Execution Stepper */}
@@ -314,7 +396,7 @@ export default function LeadStudioPage() {
             <div className="p-6 bg-[#FFFFFF] border border-[#E8E3D9] rounded-2xl space-y-6 shadow-md animate-in fade-in duration-200">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E3D9] pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#F5F2EB] border border-[#E8E3D9] flex items-center justify-center font-serif text-lg font-bold text-[#C2410C]">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F5F2EB] to-[#E8E3D9] border border-[#E8E3D9] flex items-center justify-center font-serif text-lg font-bold text-[#C2410C]">
                     {scrapedResult.company_name.charAt(0)}
                   </div>
                   <div>
@@ -347,7 +429,8 @@ export default function LeadStudioPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Column: Intelligence Dossier */}
                 <div className="space-y-4 p-4 bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl text-xs">
-                  <h4 className="font-serif font-bold text-sm text-[#1C1917] uppercase tracking-wider">
+                  <h4 className="font-serif font-bold text-sm text-[#1C1917] uppercase tracking-wider flex items-center gap-1.5">
+                    <Building2 className="w-4 h-4 text-[#C2410C]" />
                     Scraped Intelligence Dossier
                   </h4>
 
@@ -375,9 +458,9 @@ export default function LeadStudioPage() {
 
                   <div className="space-y-1 pt-1">
                     <span className="font-semibold text-[#78716C]">Detected Tech Stack</span>
-                    <div className="flex flex-wrap gap-1 pt-1">
+                    <div className="flex flex-wrap gap-1.5 pt-1">
                       {scrapedResult.tech_stack.map((t) => (
-                        <span key={t} className="px-2 py-0.5 bg-[#FFFFFF] border border-[#E8E3D9] rounded font-mono text-[#1C1917]">
+                        <span key={t} className="px-2.5 py-1 bg-[#FFFFFF] border border-[#E8E3D9] rounded-md font-mono text-[#1C1917] shadow-2xs">
                           {t}
                         </span>
                       ))}
@@ -385,35 +468,67 @@ export default function LeadStudioPage() {
                   </div>
                 </div>
 
-                {/* Right Column: Generated Cold Outreach Draft */}
+                {/* Right Column: Generated Cold Outreach Draft Studio */}
                 <div className="space-y-4 p-4 bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl text-xs flex flex-col justify-between">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="font-serif font-bold text-sm text-[#1C1917] uppercase tracking-wider">
-                        Generated Outreach Message
+                        Outreach Message Workshop
                       </h4>
-                      <button
-                        onClick={handleCopyEmail}
-                        className="text-[11px] font-semibold text-[#57534E] hover:text-[#1C1917] flex items-center gap-1"
-                      >
-                        {copiedEmail ? <Check className="w-3.5 h-3.5 text-[#047857]" /> : <Copy className="w-3.5 h-3.5" />}
-                        {copiedEmail ? "Copied!" : "Copy Text"}
-                      </button>
+                      <div className="flex items-center gap-1 bg-[#FFFFFF] p-1 rounded-lg border border-[#E8E3D9]">
+                        {(["Executive", "Solution-First", "Challenger"] as const).map((tone) => (
+                          <button
+                            key={tone}
+                            onClick={() => setSelectedTone(tone)}
+                            className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
+                              selectedTone === tone
+                                ? "bg-[#C2410C] text-white font-semibold"
+                                : "text-[#78716C] hover:text-[#1C1917]"
+                            }`}
+                          >
+                            {tone}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="p-3 bg-[#FFFFFF] border border-[#E8E3D9] rounded-lg space-y-2">
-                      <p className="font-semibold text-[#1C1917]">Subject: {scrapedResult.email_subject}</p>
+                      <p className="font-semibold text-[#1C1917]">
+                        Subject: {scrapedResult.email_subjects[selectedTone] || scrapedResult.email_subjects["Solution-First"]}
+                      </p>
                       <div className="border-t border-[#E8E3D9] pt-2 text-[#57534E] whitespace-pre-line leading-relaxed">
-                        {scrapedResult.email_body}
+                        {scrapedResult.email_bodies[selectedTone] || scrapedResult.email_bodies["Solution-First"]}
+                      </div>
+                    </div>
+
+                    {/* Personalization Variable Chips */}
+                    <div className="p-2.5 bg-[#FFFFFF] border border-[#E8E3D9] rounded-lg space-y-1">
+                      <span className="text-[10px] font-semibold text-[#78716C] uppercase tracking-wider">
+                        Personalization Tokens
+                      </span>
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        <span className="px-2 py-0.5 text-[10px] font-mono bg-[#FAF7F2] border border-[#E8E3D9] rounded text-[#C2410C]">
+                          [Company: {scrapedResult.company_name}]
+                        </span>
+                        <span className="px-2 py-0.5 text-[10px] font-mono bg-[#FAF7F2] border border-[#E8E3D9] rounded text-[#C2410C]">
+                          [Persona: {scrapedResult.decision_maker}]
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-2 flex items-center justify-between">
-                    <span className="text-[10px] text-[#78716C]">Drafted automatically based on ICP profile</span>
+                  <div className="pt-2 flex items-center justify-between gap-2">
+                    <button
+                      onClick={handleCopyEmail}
+                      className="px-3.5 py-2 text-xs font-semibold text-[#57534E] hover:text-[#1C1917] bg-[#FFFFFF] border border-[#E8E3D9] rounded-lg transition-colors flex items-center gap-1.5 shadow-2xs"
+                    >
+                      {copiedEmail ? <Check className="w-3.5 h-3.5 text-[#047857]" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedEmail ? "Copied!" : "Copy Text"}
+                    </button>
+
                     <button
                       onClick={handleSaveLeadToProfile}
-                      className="px-3 py-1.5 bg-[#C2410C] hover:bg-[#9A3412] text-white font-semibold rounded-lg transition-colors flex items-center gap-1"
+                      className="px-4 py-2 bg-[#C2410C] hover:bg-[#9A3412] text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-xs"
                     >
                       <Bookmark className="w-3.5 h-3.5" />
                       Save to Profile

@@ -21,10 +21,10 @@ export default function LeadForgeLogo({ size = "md", showTag = true }: LeadForge
   };
 
   return (
-    <Link href="/" className="flex items-center gap-3 group shrink-0">
-      {/* Custom Vector Anvil / Forge Flame Emblem */}
+    <Link href="/" className="flex items-center gap-2.5 group shrink-0 select-none">
+      {/* Custom Vector Anvil & Ember Geometric Emblem */}
       <div
-        className={`${iconSizes[size]} rounded-xl bg-gradient-to-br from-[#EA580C] via-[#C2410C] to-[#9A3412] p-2 flex items-center justify-center shadow-xs group-hover:shadow-md transition-all group-hover:scale-105`}
+        className={`${iconSizes[size]} rounded-xl bg-gradient-to-br from-[#EA580C] via-[#C2410C] to-[#9A3412] p-2 flex items-center justify-center shadow-xs group-hover:shadow-md transition-all group-hover:scale-105 border border-[#F97316]/30`}
       >
         <svg
           viewBox="0 0 24 24"
@@ -35,22 +35,28 @@ export default function LeadForgeLogo({ size = "md", showTag = true }: LeadForge
           strokeLinejoin="round"
           className="w-full h-full text-white"
         >
-          {/* Anvil Base & Forge Flame */}
-          <path d="M7 10h10l-1.5 8h-7z" fill="currentColor" fillOpacity="0.2" />
-          <path d="M4 14h16v2H4z" />
-          <path d="M8 14v4M16 14v4" />
-          <path d="M12 4c-1.5 2-2.5 3.5-1 6 1.5 2.5 1 4-1 4" />
-          <path d="M12 4c2 1.5 3 3.5 1.5 6C12 11.5 13 13 15 14" />
+          {/* Anvil Base */}
+          <path d="M4 17h16" />
+          <path d="M6 17v-3l2-3h8l2 3v3" />
+          <path d="M9 11V7h6v4" />
+          {/* Ember Spark */}
+          <circle cx="12" cy="4" r="1.5" fill="currentColor" />
         </svg>
       </div>
 
-      <div className="flex items-center">
-        <span className={`font-serif ${textSizes[size]} font-bold tracking-tight text-[#1C1917] group-hover:text-[#C2410C] transition-colors`}>
-          LeadForge
-        </span>
+      <div className="flex items-center gap-1.5">
+        <div className="flex items-baseline">
+          <span className={`font-serif ${textSizes[size]} font-bold tracking-tight text-[#1C1917]`}>
+            Lead
+          </span>
+          <span className={`font-serif ${textSizes[size]} font-bold tracking-tight text-[#C2410C]`}>
+            Forge
+          </span>
+        </div>
+
         {showTag && (
-          <span className="ml-2 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md bg-[#F5F2EB] border border-[#E8E3D9] text-[#C2410C] shadow-2xs">
-            B2B Studio
+          <span className="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md bg-[#F5F2EB] border border-[#E8E3D9] text-[#78716C] shadow-2xs">
+            Studio
           </span>
         )}
       </div>
