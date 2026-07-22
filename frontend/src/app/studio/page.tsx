@@ -23,6 +23,8 @@ import {
   CheckCircle2,
   Briefcase,
   Users,
+  Plus,
+  X,
 } from "lucide-react";
 
 export default function LeadStudioPage() {
@@ -34,8 +36,45 @@ export default function LeadStudioPage() {
     offering: "AI-powered cloud observability and automated performance monitoring platform that reduces latency and cloud infrastructure spend",
   });
 
+  const [customIndustryInput, setCustomIndustryInput] = useState("");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
+
+  const availableIndustries = [
+    "B2B SaaS",
+    "Cloud Infrastructure",
+    "DevOps Tools",
+    "FinTech",
+    "Cybersecurity",
+    "AI Infrastructure",
+    "Data Engineering",
+    "E-commerce Logistics",
+    "Healthcare Tech",
+  ];
+
+  const toggleIndustry = (ind: string) => {
+    setProfile((prev) => {
+      const exists = prev.targetIndustries.includes(ind);
+      return {
+        ...prev,
+        targetIndustries: exists
+          ? prev.targetIndustries.filter((i) => i !== ind)
+          : [...prev.targetIndustries, ind],
+      };
+    });
+  };
+
+  const handleAddCustomIndustry = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = customIndustryInput.trim();
+    if (trimmed && !profile.targetIndustries.includes(trimmed)) {
+      setProfile((prev) => ({
+        ...prev,
+        targetIndustries: [...prev.targetIndustries, trimmed],
+      }));
+      setCustomIndustryInput("");
+    }
+  };
 
   // Scraper Input State
   const [targetDomain, setTargetDomain] = useState("vercel.com");
@@ -250,11 +289,15 @@ export default function LeadStudioPage() {
                     Target Industry Verticals
                   </div>
                   <div className="flex flex-wrap gap-1 pt-1">
-                    {profile.targetIndustries.map((ind) => (
-                      <span key={ind} className="px-2 py-0.5 bg-[#FFFFFF] border border-[#E8E3D9] rounded text-[#1C1917] font-medium">
-                        {ind}
-                      </span>
-                    ))}
+                    {profile.targetIndustries.length > 0 ? (
+                      profile.targetIndustries.map((ind) => (
+                        <span key={ind} className="px-2 py-0.5 bg-[#FFFFFF] border border-[#E8E3D9] rounded text-[#1C1917] font-medium">
+                          {ind}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-[#78716C] italic">No industries selected</span>
+                    )}
                   </div>
                 </div>
 
@@ -280,8 +323,64 @@ export default function LeadStudioPage() {
                 </div>
               </div>
             ) : (
-              /* Profile Edit Form */
-              <form onSubmit={handleSaveProfile} className="space-y-4 text-xs pt-2">
+              /* Profile Edit Form with Full Industry Selection */
+              <form onSubmit={handleSaveProfile} className="space-y-5 text-xs pt-2">
+                {/* 1. Target Industry Verticals Selection & Custom Add */}
+                <div className="p-4 bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="font-semibold text-[#1C1917] flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-[#C2410C]" />
+                      Target Industry Verticals (Select or Add Custom)
+                    </label>
+                    <span className="text-[11px] text-[#78716C]">
+                      {profile.targetIndustries.length} Selected
+                    </span>
+                  </div>
+
+                  {/* Preset Industry Chips */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {availableIndustries.map((ind) => {
+                      const isSelected = profile.targetIndustries.includes(ind);
+                      return (
+                        <button
+                          key={ind}
+                          type="button"
+                          onClick={() => toggleIndustry(ind)}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 ${
+                            isSelected
+                              ? "bg-[#C2410C] text-white font-semibold shadow-2xs"
+                              : "bg-[#FFFFFF] text-[#57534E] border border-[#E8E3D9] hover:bg-[#F5F2EB]"
+                          }`}
+                        >
+                          {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                          {ind}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Custom Industry Input Bar */}
+                  <div className="pt-2 flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Add custom industry vertical (e.g. CleanTech, EdTech)..."
+                      value={customIndustryInput}
+                      onChange={(e) => setCustomIndustryInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleAddCustomIndustry(e)}
+                      className="flex-1 px-3 py-2 bg-[#FFFFFF] border border-[#E8E3D9] rounded-lg text-[#1C1917] placeholder-[#78716C] focus:outline-none focus:border-[#C2410C]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleAddCustomIndustry()}
+                      className="px-3.5 py-2 bg-[#1C1917] hover:bg-[#333] text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1 shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add Industry
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Company Size Range */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="font-semibold text-[#57534E]">Minimum Employees</label>
@@ -303,6 +402,7 @@ export default function LeadStudioPage() {
                   </div>
                 </div>
 
+                {/* 3. Offering Value Proposition */}
                 <div className="space-y-1">
                   <label className="font-semibold text-[#57534E]">What We Are Offering (Your Product / Service Value Proposition)</label>
                   <textarea
@@ -313,13 +413,23 @@ export default function LeadStudioPage() {
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#C2410C] hover:bg-[#9A3412] text-white font-semibold rounded-lg transition-colors flex items-center gap-1.5"
-                >
-                  <Check className="w-4 h-4" />
-                  Save Updated ICP & Offering
-                </button>
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 bg-[#C2410C] hover:bg-[#9A3412] text-white font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-xs"
+                  >
+                    <Check className="w-4 h-4" />
+                    Save Updated ICP & Offering
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingProfile(false)}
+                    className="px-4 py-2.5 bg-[#FFFFFF] border border-[#E8E3D9] text-[#57534E] hover:text-[#1C1917] font-semibold rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </form>
             )}
 
