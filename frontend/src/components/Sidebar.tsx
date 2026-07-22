@@ -38,34 +38,18 @@ export default function Sidebar() {
   return (
     <aside className="w-64 border-r border-[#E8E3D9] bg-[#FAF7F2] min-h-[calc(100vh-4rem)] p-4 flex flex-col justify-between shrink-0 hidden md:flex">
       <div className="space-y-6">
-        {/* User Profile Card with LeadForge Molten Flame Emblem */}
+        {/* User Profile Card matching Option 4 Avatar Badge */}
         <div className="p-3 bg-[#FFFFFF] border border-[#E8E3D9] rounded-xl flex items-center gap-3 shadow-2xs">
-          <div className="w-9 h-9 rounded-xl bg-[#FFFDF9] border border-[#E8E3D9] flex items-center justify-center p-1.5 shadow-2xs shrink-0">
-            <svg
-              viewBox="0 0 48 48"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-full h-full text-[#C2410C]"
-            >
-              <path
-                d="M 10 20 C 8 16 12 10 18 12 C 24 14 18 28 14 34 C 10 40 18 42 24 38 C 28 35 22 28 18 30"
-                stroke="#C2410C"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M 28 36 C 26 30 29 24 32 20 C 33 24 35 22 36 18 C 41 24 42 32 37 36 C 34 39 30 38 28 36 Z"
-                fill="#C2410C"
-              />
-            </svg>
+          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#EA580C] via-[#C2410C] to-[#F59E0B] text-white font-bold text-xs flex items-center justify-center shadow-2xs shrink-0">
+            {user?.name ? user.name.charAt(0).toUpperCase() : user?.email ? user.email.charAt(0).toUpperCase() : "E"}
           </div>
-          <div>
-            <p className="text-xs font-semibold text-[#1C1917]">
-              {user?.name || "My Lead Profile"}
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-[#1C1917] truncate">
+              {user?.name || user?.email?.split("@")[0] || "ebadahmed200005"}
             </p>
-            <p className="text-[10px] text-[#047857] font-medium flex items-center gap-0.5">
-              <UserCheck className="w-2.5 h-2.5" /> Pro ICP Active
+            <p className="text-[10px] text-[#047857] font-medium flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#84CC16] animate-pulse shrink-0" />
+              Pro Workspace
             </p>
           </div>
         </div>
