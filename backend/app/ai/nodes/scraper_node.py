@@ -4,156 +4,345 @@ app/ai/nodes/scraper_node.py
 LangGraph node: scraper_node
 
 Responsibility:
-  - "Call" the Firecrawl MCP tool to scrape raw markdown from target_url.
+  - Call the real Firecrawl API to scrape raw markdown AND extract structured
+    company intelligence from the target_url.
   - Apply sanitization / prompt-injection guardrails before the text
     reaches any LLM.
   - Write `raw_scraped_text` (on success) or `scraper_error` (on failure)
     back into the graph state.
 
-Current implementation: MOCK (returns deterministic dummy markdown).
-Production swap: Replace the body of `_call_firecrawl()` with the real
-MCP Firecrawl call, e.g.:
-    from mcp import Client
-    async with Client("firecrawl") as mcp:
-        result = await mcp.call_tool("scrape", {"url": url})
-        return result.content
+Firecrawl integration:
+  Uses `firecrawl-py` SDK (AsyncFirecrawlApp).
+  Two-pass approach:
+    1. Structured extract  — Firecrawl's LLM extracts a company intelligence
+                             schema directly from the page content.
+    2. Markdown fallback   — If extraction fails or returns empty, we fall back
+                             to a plain markdown scrape so the qualifier LLM
+                             still has something to work with.
 
-Why sanitize HERE (not in the LLM nodes)?
-  The scraper is the trust boundary.  Any text that passes this node
-  is considered "clean enough to pass to the LLM prompt".  Nodes
-  downstream should not need to re-sanitize.
+  The structured extract result is formatted into a rich markdown report
+  that feeds directly into the qualifier node's context window.
+
+Rate-limit handling:
+  HTTP 429 responses from Firecrawl are re-raised as TooManyRequestsError
+  so tenacity (in lead_discovery.py) can apply exponential backoff + retry.
+
+Environment variable required:
+  FIRECRAWL_API_KEY=fc-your-key-here   (set in .env or server environment)
 """
 from __future__ import annotations
-
-import asyncio
-import random
-from datetime import datetime, timezone
 
 import structlog
 
 from app.ai.sanitizer import is_safe_url, sanitize_scraped_text
 from app.ai.state import LeadState
+from app.core.config import get_settings
+from app.tasks.lead_discovery import TooManyRequestsError
 
 logger = structlog.get_logger(__name__)
+settings = get_settings()
 
-# ─── Mock Firecrawl content library ──────────────────────────────────────────
-# Deterministic enough for testing; varied enough to exercise the qualifier.
+# ─── Firecrawl extraction schema ─────────────────────────────────────────────
+# These are the fields we ask Firecrawl's LLM extractor to pull from the page.
+# Firecrawl uses this schema + a prompt to intelligently extract from any site.
 
-_MOCK_MARKDOWN_TEMPLATES = [
-    """# {company} | AI-Powered B2B Sales Platform
+_EXTRACT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "company_name": {
+            "type": "string",
+            "description": "Official name of the company",
+        },
+        "company_overview": {
+            "type": "string",
+            "description": (
+                "A concise overview of what the company does, their core product "
+                "or service, and the market they serve."
+            ),
+        },
+        "headquarters": {
+            "type": "string",
+            "description": "City and country where the company is headquartered.",
+        },
+        "office_locations": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "All known office or regional hub locations worldwide.",
+        },
+        "expansion_plans": {
+            "type": "string",
+            "description": (
+                "Any stated expansion plans, new markets they are entering, "
+                "or geographies they are growing into."
+            ),
+        },
+        "domains_and_industries": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": (
+                "The industries, verticals, or business domains the company "
+                "operates in or targets as customers."
+            ),
+        },
+        "interests_and_focus_areas": {
+            "type": "string",
+            "description": (
+                "Key strategic interests, technology bets, or focus areas "
+                "the company has publicly stated."
+            ),
+        },
+        "active_hiring": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": (
+                "List of professions, job titles, or departments the company "
+                "is currently hiring for."
+            ),
+        },
+        "pain_points_and_challenges": {
+            "type": "string",
+            "description": (
+                "Publicly stated challenges, operational bottlenecks, or pain "
+                "points the company is facing or has mentioned in interviews, "
+                "blog posts, or press releases."
+            ),
+        },
+        "founder_and_leadership": {
+            "type": "string",
+            "description": (
+                "Name(s) of the founder(s), CEO, or key executives. Include "
+                "their role and any notable background if mentioned."
+            ),
+        },
+        "annual_revenue_or_turnover": {
+            "type": "string",
+            "description": (
+                "Annual revenue, ARR, or turnover if publicly disclosed "
+                "or mentioned in press releases / reports."
+            ),
+        },
+        "funding_and_investors": {
+            "type": "string",
+            "description": (
+                "Funding rounds, total capital raised, valuation, and key "
+                "investors if publicly available."
+            ),
+        },
+        "key_partnerships_and_clients": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": (
+                "Notable technology partners, strategic alliances, or "
+                "publicly named enterprise clients."
+            ),
+        },
+        "technology_stack": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": (
+                "Technologies, platforms, programming languages, or tools "
+                "the company uses or builds on."
+            ),
+        },
+        "employee_count": {
+            "type": "string",
+            "description": "Approximate headcount or team size if mentioned.",
+        },
+        "contact_email": {
+            "type": "string",
+            "description": "Official contact or sales email address if listed on the site.",
+        },
+        "contact_phone": {
+            "type": "string",
+            "description": "Official phone number if listed on the site.",
+        },
+        "recent_news_or_milestones": {
+            "type": "string",
+            "description": (
+                "Recent company news, product launches, awards, or milestones "
+                "mentioned on the site."
+            ),
+        },
+    },
+    "required": ["company_name", "company_overview"],
+}
 
-## About Us
-{company} is a fast-growing Series B SaaS company helping mid-market B2B sales
-teams close deals faster using AI-driven lead scoring and automated outreach.
+_EXTRACT_PROMPT = (
+    "Extract comprehensive company intelligence from this website. "
+    "Focus on: what the company does, where they are located, where they are expanding, "
+    "which industries they serve, what professions they are currently hiring for, "
+    "their leadership and founders, annual revenue or funding, key partnerships, "
+    "and any pain points or challenges they have publicly discussed. "
+    "Only include information that is explicitly stated on the page — do NOT guess or hallucinate values."
+)
 
-## Financials & Scale
-- **Annual Turnover:** $24,500,000 ARR (Annual Recurring Revenue)
-- **Key Partnerships:** Strategic integration partnerships with Salesforce, HubSpot, and AWS.
 
-## Our Stack, Locations & Team
-- **Headquarters:** San Francisco, California, USA
-- **Regional Offices:** London (UK) and Berlin (Germany)
-- **Team Size:** 120 employees, 40% in engineering
-- **Expanding Teams:** Engineering and Sales/GTM teams are expanding rapidly.
+# ─── Helpers ─────────────────────────────────────────────────────────────────
 
-## Active Hiring
-- Senior React Frontend Developer (London)
-- Account Executives (San Francisco)
-- SDR Lead (Berlin)
+def _format_extracted_data(data: dict) -> str:
+    """
+    Convert a structured Firecrawl extraction dict into a rich markdown string
+    suitable for consumption by the qualifier LLM.
+    """
+    lines: list[str] = []
 
-## Contact Information
-- **Official Email:** hello@{company_email}.com
-- **Contact Number:** +1 (555) 0199
+    def _section(title: str, value) -> None:
+        if not value:
+            return
+        lines.append(f"\n## {title}")
+        if isinstance(value, list):
+            for item in value:
+                if item:
+                    lines.append(f"- {item}")
+        else:
+            lines.append(str(value))
 
-## Pain Points (visible on their blog)
-Their VP of Sales mentioned in a recent webinar: "We are drowning in unqualified
-leads. Our SDRs spend 60% of their time on research instead of selling."
-""",
-    """# {company} — Enterprise Data Management Solutions
+    company = data.get("company_name", "Unknown Company")
+    lines.append(f"# {company} — Company Intelligence Report")
 
-## Company Overview
-{company} provides on-premise data warehousing solutions for Fortune 500
-manufacturing companies. Founded in 1998, they operate in a legacy market.
+    _section("Company Overview", data.get("company_overview"))
+    _section("Headquarters", data.get("headquarters"))
+    _section("Office Locations", data.get("office_locations"))
+    _section("Expansion Plans & New Markets", data.get("expansion_plans"))
+    _section("Industries & Domains", data.get("domains_and_industries"))
+    _section("Strategic Interests & Focus Areas", data.get("interests_and_focus_areas"))
+    _section("Active Hiring (Current Open Roles)", data.get("active_hiring"))
+    _section("Pain Points & Challenges", data.get("pain_points_and_challenges"))
+    _section("Leadership & Founders", data.get("founder_and_leadership"))
+    _section("Annual Revenue / Turnover", data.get("annual_revenue_or_turnover"))
+    _section("Funding & Investors", data.get("funding_and_investors"))
+    _section("Key Partnerships & Clients", data.get("key_partnerships_and_clients"))
+    _section("Technology Stack", data.get("technology_stack"))
+    _section("Employee Count", data.get("employee_count"))
+    _section("Recent News & Milestones", data.get("recent_news_or_milestones"))
 
-## Financials & Scale
-- **Annual Revenue:** Approximately $150,000,000 USD
-- **Dominating Sectors:** Heavy Industry, Automotive Manufacturing, and Aerospace.
-- **Key Partnerships:** Long-term integration partners with Oracle and SAP.
+    contact_parts = []
+    if data.get("contact_email"):
+        contact_parts.append(f"Email: {data['contact_email']}")
+    if data.get("contact_phone"):
+        contact_parts.append(f"Phone: {data['contact_phone']}")
+    if contact_parts:
+        lines.append("\n## Contact Information")
+        for part in contact_parts:
+            lines.append(f"- {part}")
 
-## Locations
-- **Headquarters:** Detroit, Michigan, USA
-- **Manufacturing Support Hubs:** Stuttgart (Germany) and Nagoya (Japan)
+    return "\n".join(lines)
 
-## Technology & Teams
-- Still running Oracle 11g and COBOL-based ETL pipelines.
-- **Expanding Teams:** None. Currently restructuring and downsizing operations.
-- **Active Hiring:** None (Company-wide hiring freeze in effect).
 
-## Contact Information
-- **Official Email:** info@{company_email}.corp
-- **Contact Number:** +1 (313) 555-0142
-""",
-    """# {company} — Growth Marketing Agency
-
-## What We Do
-{company} is a boutique performance marketing agency specialising in
-paid social and SEO for e-commerce DTC brands.
-
-## Financials & Scale
-- **Annual Turnover:** $3,200,000 USD (Ad management billing fees)
-- **Key Partnerships:** Google Premier Partner, Meta Business Partner, and Shopify Plus Partner.
-- **Dominating Sectors:** E-commerce DTC, Skincare & Beauty, and Wellness Brands.
-
-## Locations
-- **Headquarters:** Austin, Texas, USA (Fully remote operations across 4 states)
-
-## Team & Hiring
-- 12-person agency, all remote. Founded 2021.
-- **Expanding Teams:** Client Services and Account Management.
-- **Active Hiring:** 
-  - 2 Junior Account Managers (Remote)
-  - Paid Ads Specialist ( Austin, TX )
-
-## Contact Information
-- **Official Email:** grow@{company_email}.co
-- **Contact Number:** +1 (512) 555-0177
-""",
-]
-
+# ─── Real Firecrawl call ─────────────────────────────────────────────────────
 
 async def _call_firecrawl(url: str) -> str:
     """
-    Mock MCP Firecrawl call.
+    Call the real Firecrawl API to scrape and extract company intelligence.
 
-    In production, replace this with:
-        async with firecrawl_mcp_client as mcp:
-            result = await mcp.call_tool("scrape", {"url": url, "formats": ["markdown"]})
-            return result.content[0].text
+    Strategy:
+      1. Try structured extraction first (Firecrawl LLM extracts the schema).
+      2. If extraction returns empty / fails, fall back to plain markdown scrape.
 
-    The mock simulates realistic I/O latency (0.5–1.5 s) and returns varied
-    markdown so the qualifier node exercises different code paths.
+    Raises:
+      TooManyRequestsError  — on HTTP 429 (tenacity will retry with backoff)
+      RuntimeError          — on any other unrecoverable Firecrawl error
     """
-    await asyncio.sleep(random.uniform(0.5, 1.5))  # simulate network I/O
+    from firecrawl import AsyncFirecrawlApp  # type: ignore[import]
 
-    # Extract a pseudo-company name from the URL domain for variety
-    domain = url.split("//")[-1].split("/")[0].replace("www.", "")
-    company = domain.split(".")[0].replace("-", " ").title()
-    company_email = company.lower().replace(" ", "")
+    api_key = settings.firecrawl_api_key
+    if not api_key:
+        raise RuntimeError(
+            "FIRECRAWL_API_KEY is not set. "
+            "Add it to your .env file or server environment variables."
+        )
 
-    template = random.choice(_MOCK_MARKDOWN_TEMPLATES)
-    return template.format(company=company, company_email=company_email)
+    app = AsyncFirecrawlApp(api_key=api_key)
 
+    node_logger = logger.bind(url=url)
+
+    # ── Pass 1: Structured extract ────────────────────────────────────────────
+    try:
+        node_logger.info("Calling Firecrawl structured extract")
+        extract_result = await app.async_scrape_url(
+            url,
+            params={
+                "formats": ["extract"],
+                "extract": {
+                    "schema": _EXTRACT_SCHEMA,
+                    "prompt": _EXTRACT_PROMPT,
+                },
+                "timeout": 30000,  # 30s timeout
+            },
+        )
+
+        extracted = {}
+        if hasattr(extract_result, "extract") and extract_result.extract:
+            extracted = extract_result.extract
+        elif isinstance(extract_result, dict):
+            extracted = extract_result.get("extract") or {}
+
+        if extracted and extracted.get("company_name"):
+            node_logger.info(
+                "Structured extraction succeeded",
+                company=extracted.get("company_name"),
+                fields_populated=sum(1 for v in extracted.values() if v),
+            )
+            return _format_extracted_data(extracted)
+
+        node_logger.warning(
+            "Structured extraction returned empty — falling back to markdown scrape"
+        )
+
+    except Exception as exc:
+        exc_str = str(exc).lower()
+        if "429" in exc_str or "rate limit" in exc_str or "too many requests" in exc_str:
+            raise TooManyRequestsError(f"Firecrawl rate-limited: {exc}") from exc
+        node_logger.warning(
+            "Structured extraction failed — falling back to markdown scrape",
+            error=str(exc),
+        )
+
+    # ── Pass 2: Markdown fallback ─────────────────────────────────────────────
+    try:
+        node_logger.info("Calling Firecrawl markdown scrape (fallback)")
+        scrape_result = await app.async_scrape_url(
+            url,
+            params={
+                "formats": ["markdown"],
+                "timeout": 30000,
+            },
+        )
+
+        markdown = ""
+        if hasattr(scrape_result, "markdown") and scrape_result.markdown:
+            markdown = scrape_result.markdown
+        elif isinstance(scrape_result, dict):
+            markdown = scrape_result.get("markdown") or ""
+
+        if markdown:
+            node_logger.info("Markdown fallback succeeded", chars=len(markdown))
+            return markdown
+
+        raise RuntimeError("Firecrawl returned empty markdown content.")
+
+    except TooManyRequestsError:
+        raise  # propagate for tenacity
+
+    except Exception as exc:
+        exc_str = str(exc).lower()
+        if "429" in exc_str or "rate limit" in exc_str or "too many requests" in exc_str:
+            raise TooManyRequestsError(f"Firecrawl rate-limited: {exc}") from exc
+        raise RuntimeError(f"Firecrawl markdown scrape failed: {exc}") from exc
+
+
+# ─── LangGraph node ──────────────────────────────────────────────────────────
 
 async def scraper_node(state: LeadState) -> dict:
     """
-    LangGraph node: scrape the target URL and sanitize the output.
+    LangGraph node: scrape the target URL via real Firecrawl API and sanitize output.
 
-    Returns a partial state dict.  LangGraph merges it into the full state.
+    Returns a partial state dict. LangGraph merges it into the full state.
     """
     url = state["target_url"]
     node_logger = logger.bind(node="scraper_node", url=url)
 
-    # ── Safety check: reject dangerous URL schemes before making any call ────
+    # ── Safety check: reject dangerous URL schemes before making any call ─────
     if not is_safe_url(url):
         node_logger.error("Unsafe URL scheme rejected", url=url)
         return {
@@ -162,18 +351,18 @@ async def scraper_node(state: LeadState) -> dict:
         }
 
     try:
-        node_logger.info("Scraping target URL (mock Firecrawl MCP)")
-        raw_markdown = await _call_firecrawl(url)
+        node_logger.info("Starting Firecrawl scrape")
+        raw_content = await _call_firecrawl(url)
 
-        if not raw_markdown or not raw_markdown.strip():
-            node_logger.warning("Scraper returned empty content")
+        if not raw_content or not raw_content.strip():
+            node_logger.warning("Firecrawl returned empty content")
             return {
                 "raw_scraped_text": None,
-                "scraper_error": "Scraper returned empty content — no text to process.",
+                "scraper_error": "Firecrawl returned empty content — no text to process.",
             }
 
-        # ── Apply prompt injection guardrails ────────────────────────────────
-        sanitized = sanitize_scraped_text(raw_markdown)
+        # ── Apply prompt injection guardrails ──────────────────────────────────
+        sanitized = sanitize_scraped_text(raw_content)
 
         if not sanitized.strip():
             node_logger.warning("All content stripped by sanitizer")
@@ -184,12 +373,22 @@ async def scraper_node(state: LeadState) -> dict:
 
         node_logger.info(
             "Scraping complete",
-            raw_chars=len(raw_markdown),
+            raw_chars=len(raw_content),
             sanitized_chars=len(sanitized),
         )
         return {
             "raw_scraped_text": sanitized,
             "scraper_error": None,
+        }
+
+    except TooManyRequestsError:
+        raise  # Let tenacity handle retries
+
+    except RuntimeError as exc:
+        node_logger.error("Firecrawl scrape failed", error=str(exc))
+        return {
+            "raw_scraped_text": None,
+            "scraper_error": str(exc),
         }
 
     except Exception as exc:

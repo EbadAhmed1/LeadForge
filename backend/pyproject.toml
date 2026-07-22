@@ -29,6 +29,7 @@ dependencies = [
     "langchain-anthropic>=0.1.0", # Anthropic Claude integration
     "langchain-core>=0.2.0",   # Core LangChain primitives
     "bleach>=6.1.0",           # HTML stripping for prompt injection guardrails
+    "firecrawl-py>=1.2.0",     # Firecrawl web scraper SDK (real scraping)
 
     # ─── Auth (stubs — no logic yet) ───────────────────────────────────────────
     "python-jose[cryptography]>=3.3.0",

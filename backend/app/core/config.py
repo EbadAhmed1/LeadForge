@@ -70,6 +70,9 @@ class Settings(BaseSettings):
     openai_api_key: str = ""     # OPENAI_API_KEY
     anthropic_api_key: str = ""  # ANTHROPIC_API_KEY
 
+    # ─── Firecrawl Web Scraper ──────────────────────────────────────────────────────
+    firecrawl_api_key: str = ""  # FIRECRAWL_API_KEY — get one at firecrawl.dev
+
     # ─── LangSmith Tracing ─────────────────────────────────────────────────────────────────────
     # Set to "true" to enable LangSmith tracing (no code changes needed)
     langchain_tracing_v2: str = "false"
