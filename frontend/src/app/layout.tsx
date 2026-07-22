@@ -18,8 +18,15 @@ const newsreader = Newsreader({
 });
 
 export const metadata: Metadata = {
-  title: "LeadForge — B2B Lead Intelligence & Precise Outreach",
+  title: "LeadForge — B2B Lead Intelligence & Precise Outreach Studio",
   description: "Automated B2B lead scraping, ICP qualification, and personalized cold outreach generation.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 const hasClerkKey = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
