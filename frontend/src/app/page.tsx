@@ -21,16 +21,17 @@ import {
   Layers,
   Cpu,
   CheckCircle2,
+  Briefcase,
+  Users,
 } from "lucide-react";
 
 export default function LeadStudioPage() {
-  // Saved User Profile / ICP State
+  // Saved User Profile / ICP State (Target Industries, Company Size Range, What We Are Offering)
   const [profile, setProfile] = useState({
     targetIndustries: ["B2B SaaS", "Cloud Infrastructure", "DevOps Tools"],
     minEmployees: 50,
     maxEmployees: 500,
-    decisionMaker: "VP of Engineering / CTO",
-    painPoints: "High cloud infrastructure spend, Kubernetes cluster scaling latency, CI/CD pipeline build delays",
+    offering: "AI-powered cloud observability and automated performance monitoring platform that reduces latency and cloud infrastructure spend",
   });
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -79,8 +80,8 @@ export default function LeadStudioPage() {
       "Challenger": "Are serverless cold starts bottlenecking Vercel's enterprise traffic?",
     },
     email_bodies: {
-      "Executive": "Hi Sarah,\n\nI was following Vercel's latest Next.js release and noticed your team's focus on Edge middleware performance.\n\nWe engineered LeadForge to automatically diagnose and optimize high-concurrency Next.js serverless execution workflows without adding overhead.\n\nWould you be open to a 5-minute brief next Tuesday?",
-      "Solution-First": "Hi Sarah,\n\nNoticed Vercel's recent push into enterprise edge deployment. Cold start latency during peak concurrency remains a key challenge for Next.js architectures.\n\nOur team built an automated diagnostic workflow specifically designed to compress cold starts by 40%.\n\nLet's connect for 5 minutes if this aligns with your Q3 priorities.",
+      "Executive": "Hi Sarah,\n\nI was following Vercel's latest Next.js release and noticed your team's focus on Edge middleware performance.\n\nOur solution helps teams diagnose and optimize high-concurrency Next.js serverless execution workflows without adding agent overhead.\n\nWould you be open to a 5-minute brief next Tuesday?",
+      "Solution-First": "Hi Sarah,\n\nNoticed Vercel's recent push into enterprise edge deployment. Cold start latency during peak concurrency remains a key challenge for Next.js architectures.\n\nOur platform is specifically designed to compress cold starts by 40%.\n\nLet's connect for 5 minutes if this aligns with your Q3 priorities.",
       "Challenger": "Hi Sarah,\n\nMost cloud infrastructure teams lose up to 18% of peak conversions due to unoptimized serverless middleware latency.\n\nWe created a zero-overhead execution pipeline that guarantees low-latency edge routing.\n\nWorth a brief 5-minute chat?",
     },
   });
@@ -119,22 +120,22 @@ export default function LeadStudioPage() {
         company_name: companyName,
         domain: cleanDomain,
         score: Math.floor(Math.random() * 12) + 87,
-        reasoning: `Matches saved ICP profile for ${profile.targetIndustries[0] || "B2B SaaS"}. Active cloud scaling infrastructure & high engineering headcount detected.`,
+        reasoning: `Matches target industry vertical (${profile.targetIndustries[0] || "B2B SaaS"}) and company size range (${profile.minEmployees}–${profile.maxEmployees} employees).`,
         tech_stack: ["Kubernetes", "PostgreSQL", "React", "Docker", "Python", "TypeScript"],
         pain_points: [
-          `Addressing ${profile.painPoints.split(",")[0] || "cloud latency bottlenecks"}`,
+          "Addressing cloud latency bottlenecks during peak traffic spikes",
           "Scaling high-throughput API endpoints across multi-region clusters",
         ],
-        decision_maker: profile.decisionMaker || "VP of Engineering",
+        decision_maker: "VP of Engineering / CTO",
         email_subjects: {
-          "Executive": `Executive Brief: Infrastructure velocity for ${companyName}`,
+          "Executive": `Executive Brief: Value alignment for ${companyName}`,
           "Solution-First": `Optimizing deployment latency for ${companyName}`,
           "Challenger": `Is infrastructure complexity delaying ${companyName}'s release cycles?`,
         },
         email_bodies: {
-          "Executive": `Hi Alex,\n\nI was reviewing ${cleanDomain}'s engineering stack and saw your team's recent cloud expansion.\n\nBased on your work with Kubernetes and cloud performance, I wanted to share how LeadForge helps engineering leaders streamline deployment velocity.\n\nLet's connect for 5 minutes if this aligns with your Q3 roadmap.`,
-          "Solution-First": `Hi Alex,\n\nNoticed ${companyName}'s focus on high-throughput backend scaling.\n\nWe engineered an automated diagnostic workflow specifically designed to reduce Kubernetes cluster latency during peak load spikes.\n\nWould you be open to a brief chat next week?`,
-          "Challenger": `Hi Alex,\n\nEngineering leaders at scaling B2B SaaS companies often spend 25% of sprint capacity managing cloud deployment overhead.\n\nOur system automates multi-region cluster optimization without agent overhead.\n\nWorth a 5-minute brief?`,
+          "Executive": `Hi Alex,\n\nI was reviewing ${cleanDomain}'s engineering stack and saw your team's recent cloud expansion.\n\nBased on your work with Kubernetes and cloud performance, I wanted to share how our offering (${profile.offering}) helps engineering teams streamline deployment velocity.\n\nLet's connect for 5 minutes if this aligns with your Q3 roadmap.`,
+          "Solution-First": `Hi Alex,\n\nNoticed ${companyName}'s focus on high-throughput backend scaling.\n\nOur platform (${profile.offering}) is specifically designed to reduce cluster latency during peak load spikes.\n\nWould you be open to a brief chat next week?`,
+          "Challenger": `Hi Alex,\n\nEngineering leaders at scaling B2B SaaS companies often spend 25% of sprint capacity managing cloud deployment overhead.\n\nOur offering (${profile.offering}) automates multi-region cluster optimization without agent overhead.\n\nWorth a 5-minute brief?`,
         },
       });
       setLeadSaved(false);
@@ -177,7 +178,7 @@ export default function LeadStudioPage() {
                 </span>
               </div>
               <p className="text-xs text-[#57534E] mt-1">
-                Configure your saved ICP profile, input target domains to scrape, analyze AI dossiers, and save qualified leads directly.
+                Configure your saved ICP profile & offering, input target domains to scrape, analyze AI dossiers, and save qualified leads directly.
               </p>
             </div>
 
@@ -198,7 +199,7 @@ export default function LeadStudioPage() {
               </div>
               <div>
                 <p className="font-semibold text-[#1C1917]">Target ICP Criteria</p>
-                <p className="text-[10px] text-[#78716C]">Saved Profile Rules</p>
+                <p className="text-[10px] text-[#78716C]">Industries, Size & Offering</p>
               </div>
             </div>
 
@@ -229,7 +230,7 @@ export default function LeadStudioPage() {
               <div className="flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-[#C2410C]" />
                 <h2 className="font-serif text-lg font-bold text-[#1C1917]">
-                  1. My Saved ICP Profile Criteria
+                  1. My Saved ICP Profile & Offering
                 </h2>
               </div>
               <button
@@ -241,15 +242,16 @@ export default function LeadStudioPage() {
             </div>
 
             {!isEditingProfile ? (
-              /* Profile Summary Cards */
+              /* Profile Summary Cards (Industries, Company Size, What We Are Offering) */
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                 <div className="p-3.5 bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl space-y-1">
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-[#78716C]">
-                    Target Industries
-                  </span>
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-[#78716C]">
+                    <Building2 className="w-3.5 h-3.5 text-[#C2410C]" />
+                    Target Industry Verticals
+                  </div>
                   <div className="flex flex-wrap gap-1 pt-1">
                     {profile.targetIndustries.map((ind) => (
-                      <span key={ind} className="px-2 py-0.5 bg-[#FFFFFF] border border-[#E8E3D9] rounded text-[#1C1917]">
+                      <span key={ind} className="px-2 py-0.5 bg-[#FFFFFF] border border-[#E8E3D9] rounded text-[#1C1917] font-medium">
                         {ind}
                       </span>
                     ))}
@@ -257,18 +259,24 @@ export default function LeadStudioPage() {
                 </div>
 
                 <div className="p-3.5 bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl space-y-1">
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-[#78716C]">
-                    Target Persona & Size
-                  </span>
-                  <p className="font-semibold text-[#1C1917] pt-1">{profile.decisionMaker}</p>
-                  <p className="text-[11px] text-[#78716C]">{profile.minEmployees} - {profile.maxEmployees} Employees</p>
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-[#78716C]">
+                    <Users className="w-3.5 h-3.5 text-[#C2410C]" />
+                    Target Company Size Range
+                  </div>
+                  <p className="font-semibold text-[#1C1917] pt-1">
+                    {profile.minEmployees} – {profile.maxEmployees} Employees
+                  </p>
+                  <p className="text-[11px] text-[#78716C]">Ideal growth tier focus</p>
                 </div>
 
                 <div className="p-3.5 bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl space-y-1">
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-[#78716C]">
-                    Targeted Pain Points
-                  </span>
-                  <p className="text-[#57534E] line-clamp-2 pt-1">{profile.painPoints}</p>
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-[#78716C]">
+                    <Briefcase className="w-3.5 h-3.5 text-[#C2410C]" />
+                    What We Are Offering
+                  </div>
+                  <p className="text-[#57534E] line-clamp-3 pt-1 font-medium leading-relaxed">
+                    {profile.offering}
+                  </p>
                 </div>
               </div>
             ) : (
@@ -276,23 +284,33 @@ export default function LeadStudioPage() {
               <form onSubmit={handleSaveProfile} className="space-y-4 text-xs pt-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="font-semibold text-[#57534E]">Decision-Maker Job Title</label>
+                    <label className="font-semibold text-[#57534E]">Minimum Employees</label>
                     <input
-                      type="text"
-                      value={profile.decisionMaker}
-                      onChange={(e) => setProfile({ ...profile, decisionMaker: e.target.value })}
+                      type="number"
+                      value={profile.minEmployees}
+                      onChange={(e) => setProfile({ ...profile, minEmployees: Number(e.target.value) })}
                       className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E3D9] rounded-lg text-[#1C1917]"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="font-semibold text-[#57534E]">Targeted Pain Points</label>
+                    <label className="font-semibold text-[#57534E]">Maximum Employees</label>
                     <input
-                      type="text"
-                      value={profile.painPoints}
-                      onChange={(e) => setProfile({ ...profile, painPoints: e.target.value })}
+                      type="number"
+                      value={profile.maxEmployees}
+                      onChange={(e) => setProfile({ ...profile, maxEmployees: Number(e.target.value) })}
                       className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E3D9] rounded-lg text-[#1C1917]"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-semibold text-[#57534E]">What We Are Offering (Your Product / Service Value Proposition)</label>
+                  <textarea
+                    rows={3}
+                    value={profile.offering}
+                    onChange={(e) => setProfile({ ...profile, offering: e.target.value })}
+                    className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E3D9] rounded-lg text-[#1C1917] leading-relaxed"
+                  />
                 </div>
 
                 <button
@@ -300,14 +318,14 @@ export default function LeadStudioPage() {
                   className="px-4 py-2 bg-[#C2410C] hover:bg-[#9A3412] text-white font-semibold rounded-lg transition-colors flex items-center gap-1.5"
                 >
                   <Check className="w-4 h-4" />
-                  Save Updated Profile
+                  Save Updated ICP & Offering
                 </button>
               </form>
             )}
 
             {profileSaved && (
               <p className="text-xs text-[#047857] font-semibold flex items-center gap-1">
-                <Check className="w-4 h-4" /> Profile criteria saved successfully!
+                <Check className="w-4 h-4" /> Profile & offering saved successfully!
               </p>
             )}
           </div>
@@ -511,7 +529,7 @@ export default function LeadStudioPage() {
                           [Company: {scrapedResult.company_name}]
                         </span>
                         <span className="px-2 py-0.5 text-[10px] font-mono bg-[#FAF7F2] border border-[#E8E3D9] rounded text-[#C2410C]">
-                          [Persona: {scrapedResult.decision_maker}]
+                          [Offering: {profile.offering.slice(0, 30)}...]
                         </span>
                       </div>
                     </div>
