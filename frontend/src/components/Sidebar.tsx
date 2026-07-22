@@ -30,7 +30,7 @@ export default function Sidebar() {
   }, [pathname]);
 
   const navItems = [
-    { name: "Lead Scraper Studio", href: "/", icon: Search },
+    { name: "Lead Scraper Studio", href: "/studio", icon: Search },
     { name: "Saved Leads & Profile", href: "/saved-leads", icon: Bookmark },
     { name: "Pricing & Plans", href: "/pricing", icon: CreditCard },
   ];
@@ -38,10 +38,27 @@ export default function Sidebar() {
   return (
     <aside className="w-64 border-r border-[#E8E3D9] bg-[#FAF7F2] min-h-[calc(100vh-4rem)] p-4 flex flex-col justify-between shrink-0 hidden md:flex">
       <div className="space-y-6">
-        {/* User Profile Card */}
+        {/* User Profile Card with LeadForge Molten Flame Emblem */}
         <div className="p-3 bg-[#FFFFFF] border border-[#E8E3D9] rounded-xl flex items-center gap-3 shadow-2xs">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#EA580C] to-[#C2410C] text-white flex items-center justify-center font-serif text-sm font-bold shadow-2xs">
-            {user?.name ? user.name.charAt(0).toUpperCase() : "L"}
+          <div className="w-9 h-9 rounded-xl bg-[#FFFDF9] border border-[#E8E3D9] flex items-center justify-center p-1.5 shadow-2xs shrink-0">
+            <svg
+              viewBox="0 0 48 48"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-full h-full text-[#C2410C]"
+            >
+              <path
+                d="M 10 20 C 8 16 12 10 18 12 C 24 14 18 28 14 34 C 10 40 18 42 24 38 C 28 35 22 28 18 30"
+                stroke="#C2410C"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M 28 36 C 26 30 29 24 32 20 C 33 24 35 22 36 18 C 41 24 42 32 37 36 C 34 39 30 38 28 36 Z"
+                fill="#C2410C"
+              />
+            </svg>
           </div>
           <div>
             <p className="text-xs font-semibold text-[#1C1917]">
@@ -67,7 +84,7 @@ export default function Sidebar() {
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 text-xs font-medium rounded-lg transition-colors ${
                   isActive
-                    ? "bg-[#F5F2EB] text-[#1C1917] font-semibold border border-[#E8E3D9]"
+                    ? "bg-[#FFFFFF] text-[#1C1917] font-semibold border border-[#E8E3D9] shadow-2xs"
                     : "text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB]"
                 }`}
               >

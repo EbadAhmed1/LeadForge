@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import LeadForgeLogo from "@/components/LeadForgeLogo";
 import { ArrowRight, Play, CheckCircle2, Globe, Target, Mail, Building2, Zap, Shield, ChevronRight } from "lucide-react";
 
 export default function LandingPage() {
@@ -190,14 +191,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer with LeadForgeLogo */}
       <footer className="py-12 bg-[#FAF7F2] border-t border-[#E8E3D9] text-xs text-[#78716C]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-[#C2410C] text-white flex items-center justify-center font-serif font-bold text-xs">
-              L
-            </div>
-            <span className="font-serif font-bold text-sm text-[#1C1917]">LeadForge</span>
+          <div className="flex items-center gap-3">
+            <LeadForgeLogo size="sm" showTag={false} />
             <span>© 2026 LeadForge Inc. All rights reserved.</span>
           </div>
           <div className="flex items-center gap-6">
