@@ -43,17 +43,12 @@ from tenacity import (
 )
 
 from app.ai.graph import lead_pipeline
+from app.exceptions import TooManyRequestsError  # noqa: F401  (re-exported for callers)
 
 logger = structlog.get_logger(__name__)
 
 
-# ─── Custom Exception for rate-limit simulation / real 429 handling ──────────
-
-class TooManyRequestsError(Exception):
-    """
-    Raised when any HTTP 429 is encountered in the pipeline.
-    Tenacity will catch this and apply exponential backoff.
-    """
+# TooManyRequestsError is now defined in app.exceptions (imported above).
 
 
 # ─── Tenacity retry callback ──────────────────────────────────────────────────

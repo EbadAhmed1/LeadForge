@@ -37,7 +37,7 @@ import structlog
 from app.ai.sanitizer import is_safe_url, sanitize_scraped_text
 from app.ai.state import LeadState
 from app.core.config import get_settings
-from app.tasks.lead_discovery import TooManyRequestsError
+from app.exceptions import TooManyRequestsError
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
