@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowRight, Search, Bookmark, CreditCard, LogOut, UserCheck, Sparkles, Compass } from "lucide-react";
+import { ArrowRight, Search, Bookmark, CreditCard, Power, UserCheck } from "lucide-react";
 import LeadForgeLogo from "@/components/LeadForgeLogo";
 
 interface UserState {
@@ -104,25 +104,28 @@ export default function Navbar() {
         {/* Action Buttons & Auth State */}
         <div className="hidden sm:flex items-center gap-3">
           {user ? (
-            /* Signed In User Profile Badge */
-            <div className="flex items-center gap-2.5 bg-[#FFFFFF] border border-[#E8E3D9] p-1.5 pr-3 rounded-xl shadow-2xs">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#EA580C] to-[#C2410C] text-white flex items-center justify-center font-serif font-bold text-xs shadow-xs">
-                {user.name ? user.name.charAt(0).toUpperCase() : "A"}
+            /* Option 4: Compact Pill Container User Profile Badge */
+            <div className="flex items-center gap-2.5 bg-[#FFFFFF] border border-[#E8E3D9] p-1.5 pl-1.5 pr-2 rounded-full shadow-2xs">
+              {/* Gradient Avatar Circle */}
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#EA580C] via-[#C2410C] to-[#F59E0B] text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+                {user.name ? user.name.charAt(0).toUpperCase() : user.email ? user.email.charAt(0).toUpperCase() : "E"}
               </div>
-              <div className="text-left">
-                <p className="text-xs font-semibold text-[#1C1917] leading-tight">
-                  {user.name || "Alex Mercer"}
-                </p>
-                <p className="text-[10px] text-[#047857] font-medium flex items-center gap-0.5">
-                  <UserCheck className="w-2.5 h-2.5" /> Pro Workspace
-                </p>
-              </div>
+
+              {/* Display Name / Handle */}
+              <span className="text-xs font-semibold text-[#1C1917] max-w-[140px] truncate">
+                {user.name || user.email?.split("@")[0] || "ebadahmed200005"}
+              </span>
+
+              {/* Active Status Indicator */}
+              <span className="w-2.5 h-2.5 rounded-full bg-[#84CC16] animate-pulse shrink-0" title="Active Pro Workspace" />
+
+              {/* Power / Sign Out Button */}
               <button
                 onClick={handleSignOut}
                 title="Sign Out"
-                className="ml-2 p-1 text-[#78716C] hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                className="p-1.5 bg-[#FAF7F2] hover:bg-red-50 text-[#78716C] hover:text-red-600 border border-[#E8E3D9] rounded-full transition-colors ml-0.5 shrink-0"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <Power className="w-3.5 h-3.5" />
               </button>
             </div>
           ) : (
