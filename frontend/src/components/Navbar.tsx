@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowRight, Search, Bookmark, CreditCard, LogOut, UserCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Search, Bookmark, CreditCard, LogOut, UserCheck, Sparkles, Compass } from "lucide-react";
 import LeadForgeLogo from "@/components/LeadForgeLogo";
 
 interface UserState {
@@ -58,15 +58,22 @@ export default function Navbar() {
         {/* Streamlined Navigation Links */}
         <nav className="flex items-center gap-1 sm:gap-2">
           <Link
-            href="/"
+            href="/studio"
             className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
-              pathname === "/"
+              pathname === "/studio"
                 ? "bg-[#FFFFFF] text-[#1C1917] font-semibold border border-[#E8E3D9] shadow-2xs"
                 : "text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB]"
             }`}
           >
-            <Search className={`w-4 h-4 ${pathname === "/" ? "text-[#C2410C]" : "text-[#78716C]"}`} />
-            Lead Scraper Studio
+            <Search className={`w-4 h-4 ${pathname === "/studio" ? "text-[#84CC16]" : "text-[#78716C]"}`} />
+            Studio
+          </Link>
+
+          <Link
+            href="/#method"
+            className="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5F2EB]"
+          >
+            Method
           </Link>
 
           <Link
@@ -78,7 +85,7 @@ export default function Navbar() {
             }`}
           >
             <Bookmark className={`w-4 h-4 ${pathname === "/saved-leads" ? "text-[#C2410C]" : "text-[#78716C]"}`} />
-            Saved Leads & Profile
+            Saved Leads
           </Link>
 
           <Link
@@ -90,7 +97,7 @@ export default function Navbar() {
             }`}
           >
             <CreditCard className={`w-4 h-4 ${pathname === "/pricing" ? "text-[#C2410C]" : "text-[#78716C]"}`} />
-            Pricing & Plans
+            Pricing
           </Link>
         </nav>
 
@@ -125,13 +132,13 @@ export default function Navbar() {
                 href="/sign-in"
                 className="text-xs font-semibold text-[#57534E] hover:text-[#1C1917] px-3 py-2 rounded-lg hover:bg-[#F5F2EB] transition-colors"
               >
-                Sign In
+                Log in
               </Link>
               <Link
-                href="/sign-in"
-                className="inline-flex items-center gap-2 bg-[#C2410C] hover:bg-[#9A3412] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-xs"
+                href="/studio"
+                className="inline-flex items-center gap-2 bg-[#84CC16] hover:bg-[#65A30D] text-[#1C1917] text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shadow-xs"
               >
-                Get Started
+                Start finding leads
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </>
