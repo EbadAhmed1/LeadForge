@@ -12,7 +12,7 @@ Responsibility:
     back into the graph state.
 
 Firecrawl integration:
-  Uses `firecrawl-py` SDK (AsyncFirecrawlApp).
+  Uses `firecrawl-py` SDK (AsyncFirecrawl).
   Two-pass approach:
     1. Structured extract  — Firecrawl's LLM extracts a company intelligence
                              schema directly from the page content.
@@ -243,7 +243,7 @@ async def _call_firecrawl(url: str) -> str:
       TooManyRequestsError  — on HTTP 429 (tenacity will retry with backoff)
       RuntimeError          — on any other unrecoverable Firecrawl error
     """
-    from firecrawl import AsyncFirecrawlApp  # type: ignore[import]
+    from firecrawl import AsyncFirecrawl  # type: ignore[import]
 
     api_key = settings.firecrawl_api_key
     if not api_key:
@@ -252,14 +252,14 @@ async def _call_firecrawl(url: str) -> str:
             "Add it to your .env file or server environment variables."
         )
 
-    app = AsyncFirecrawlApp(api_key=api_key)
+    app = AsyncFirecrawl(api_key=api_key)
 
     node_logger = logger.bind(url=url)
 
     # ── Pass 1: Structured extract ────────────────────────────────────────────
     try:
         node_logger.info("Calling Firecrawl structured extract")
-        extract_result = await app.async_scrape_url(
+        extract_result = await app.scrape(
             url,
             params={
                 "formats": ["extract"],
@@ -301,7 +301,7 @@ async def _call_firecrawl(url: str) -> str:
     # ── Pass 2: Markdown fallback ─────────────────────────────────────────────
     try:
         node_logger.info("Calling Firecrawl markdown scrape (fallback)")
-        scrape_result = await app.async_scrape_url(
+        scrape_result = await app.scrape(
             url,
             params={
                 "formats": ["markdown"],
