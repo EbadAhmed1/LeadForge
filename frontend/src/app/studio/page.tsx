@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
@@ -182,6 +184,7 @@ export default function LeadStudioPage() {
   const [scrapedResult, setScrapedResult] = useState<ScrapedResult | null>(null);
   const [leadSaved, setLeadSaved] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedLinkedin, setCopiedLinkedin] = useState(false);
   const [selectedTone] = useState<string>("default");
 
   // ── Profile Save ───────────────────────────────────────────────────────────
