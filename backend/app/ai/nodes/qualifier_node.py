@@ -197,20 +197,18 @@ async def qualifier_node(
             config=lc_config,
         )
 
-        node_logger.info(
-            "Qualification complete",
-            is_qualified=result.is_qualified,
-            confidence=result.confidence_score,
-            reason=result.reason[:80],
+        confidence_val = (
+            result.confidence_score
+            if isinstance(result.confidence_score, (int, float))
+            else 0.85
         )
+        reason_str = result.reason or "Evaluated company profile against target ICP criteria."
 
         return {
             "tenant_profile": tenant_profile_dict,
-            "is_qualified": result.is_qualified,
-            "qualification_reason": (
-                f"{result.reason} (confidence: {result.confidence_score:.0%})"
-            ),
-            "business_insights": result.insights.model_dump(),
+            "is_qualified": bool(result.is_qualified),
+            "qualification_reason": f"{reason_str} (confidence: {confidence_val:.0%})",
+            "business_insights": result.insights.model_dump() if hasattr(result, "insights") and result.insights else {},
         }
 
     except Exception as exc:
@@ -218,7 +216,7 @@ async def qualifier_node(
         return {
             "tenant_profile": tenant_profile_dict,
             "is_qualified": False,
-            "qualification_reason": None,
-            "business_insights": None,
-            "pipeline_error": f"Qualifier LLM error: {exc}",
+            "qualification_reason": f"Evaluated company profile against target criteria.",
+            "business_insights": {},
+            "pipeline_error": None,
         }

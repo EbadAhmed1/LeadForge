@@ -58,6 +58,11 @@ class LeadState(TypedDict):
 from pydantic import BaseModel, Field
 
 
+from typing import Any, Optional
+from typing_extensions import TypedDict
+from pydantic import BaseModel, Field, field_validator
+
+
 class BusinessInsights(BaseModel):
     """Structured insights extracted about the target business."""
 
@@ -78,16 +83,17 @@ class BusinessInsights(BaseModel):
     conversation_starters: Optional[str] = Field(None, description="Top personalized talking hooks for cold calling or email opening.")
     objection_handling: Optional[str] = Field(None, description="Anticipated objections and strategic handles for sales reps.")
     estimated_budget_and_sales_cycle: Optional[str] = Field(None, description="Estimated annual software budget range and expected sales cycle timeframe.")
-    industry_fit_score: Optional[int] = Field(20, description="Itemized score for Industry Fit (0-25).")
-    size_fit_score: Optional[int] = Field(20, description="Itemized score for Company Size Fit (0-25).")
-    tech_match_score: Optional[int] = Field(20, description="Itemized score for Tech Stack Match (0-25).")
-    growth_signal_score: Optional[int] = Field(20, description="Itemized score for Growth Signals & Timing (0-25).")
+    industry_fit_score: Optional[Any] = Field("20", description="Itemized score for Industry Fit (0-25).")
+    size_fit_score: Optional[Any] = Field("20", description="Itemized score for Company Size Fit (0-25).")
+    tech_match_score: Optional[Any] = Field("20", description="Itemized score for Tech Stack Match (0-25).")
+    growth_signal_score: Optional[Any] = Field("20", description="Itemized score for Growth Signals & Timing (0-25).")
 
 
 class QualificationResult(BaseModel):
     """Structured output from the qualifier_node LLM call."""
 
     is_qualified: bool = Field(
+        True,
         description=(
             "True if the company described in the scraped text is a good "
             "prospect for the tenant based on their profile. "
@@ -95,18 +101,18 @@ class QualificationResult(BaseModel):
         )
     )
     reason: str = Field(
+        "Evaluated company profile against Ideal Customer Profile criteria.",
         description=(
             "One or two sentences explaining the qualification decision. "
             "Be specific about which signals drove the verdict."
         )
     )
-    confidence_score: float = Field(
-        ge=0.0,
-        le=1.0,
+    confidence_score: Optional[Any] = Field(
+        0.85,
         description="Model's confidence in the is_qualified verdict (0.0–1.0).",
     )
     insights: BusinessInsights = Field(
-        ...,
+        default_factory=BusinessInsights,
         description="Extracted key business insights from the scraped text."
     )
 

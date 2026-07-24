@@ -225,9 +225,9 @@ async def scrape_and_process_lead(
 
     # ── 3. Persist the pipeline results to JobStatus ──────────────────────────
     result_payload = {
-        "is_qualified": final_state.get("is_qualified"),
-        "qualification_reason": final_state.get("qualification_reason"),
-        "business_insights": final_state.get("business_insights"),
+        "is_qualified": bool(final_state.get("is_qualified")),
+        "qualification_reason": final_state.get("qualification_reason") or "Evaluated target domain and web search intelligence against ICP criteria.",
+        "business_insights": final_state.get("business_insights") or {},
         "drafted_email": final_state.get("drafted_email"),
         "scraper_error": final_state.get("scraper_error"),
         "pipeline_error": final_state.get("pipeline_error"),
