@@ -53,7 +53,7 @@ def _build_llm():
             model=settings.llm_model,
             api_key=settings.anthropic_api_key,
             temperature=0.1,  # Low temp for factual classification
-            max_tokens=512,
+            max_tokens=2048,
         )
     else:
         from langchain_openai import ChatOpenAI
@@ -61,7 +61,7 @@ def _build_llm():
             model=settings.llm_model,
             api_key=settings.openai_api_key,
             temperature=0.1,
-            max_tokens=512,
+            max_tokens=2048,
         )
 
     return base_llm.with_structured_output(QualificationResult)

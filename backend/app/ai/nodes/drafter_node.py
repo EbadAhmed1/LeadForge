@@ -93,6 +93,7 @@ async def drafter_node(
     tenant_profile = state.get("tenant_profile") or {}
     qualification_reason = state.get("qualification_reason") or ""
     is_qualified = state.get("is_qualified")
+    qual_status_str = "QUALIFIED" if is_qualified else "NOT QUALIFIED"
 
     # ── Build prompt with all available context ───────────────────────────────
     tenant_name = tenant_profile.get("name", "Our Company")
@@ -161,10 +162,10 @@ async def drafter_node(
 
     except Exception as exc:
         node_logger.exception("Drafter LLM call failed", error=str(exc))
-        # Non-fatal: the job still succeeded (we got a qualified lead);
-        # we just failed to draft the email. Surface as pipeline_error but
-        # leave drafted_email as None so the caller knows.
+        # Non-fatal: the job still succeeded (we got qualification + insights);
+        # we just failed to draft the email. Leave drafted_email as None
+        # so the frontend can display "Email drafting did not complete".
+        # Do NOT set pipeline_error — qualification data is still valid.
         return {
             "drafted_email": None,
-            "pipeline_error": f"Drafter LLM error: {exc}",
         }
