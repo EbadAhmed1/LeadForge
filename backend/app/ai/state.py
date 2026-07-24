@@ -23,6 +23,8 @@ from __future__ import annotations
 from typing import Optional
 from typing_extensions import TypedDict
 
+from pydantic import BaseModel, Field
+
 
 class LeadState(TypedDict):
     # ─── Inputs (provided before graph.invoke) ───────────────────────────────
@@ -55,13 +57,6 @@ class LeadState(TypedDict):
 # They live here (not in schemas/) because they are AI-internal contracts,
 # not API-facing types.
 
-from pydantic import BaseModel, Field
-
-
-from typing import Any, Optional
-from typing_extensions import TypedDict
-from pydantic import BaseModel, Field, field_validator
-
 
 class BusinessInsights(BaseModel):
     """Structured insights extracted about the target business."""
@@ -74,26 +69,25 @@ class BusinessInsights(BaseModel):
     contact_email: Optional[str] = Field(None, description="Official contact email address(es) found on the page.")
     contact_phone: Optional[str] = Field(None, description="Official contact phone number(s) found on the page.")
     expanding_teams: Optional[str] = Field(None, description="Specific teams or divisions they are actively expanding.")
-    
+
     # ── 6 New Sales Intelligence Modules ───────────────────────────────────────
     target_personas: Optional[str] = Field(None, description="Recommended decision-maker titles to target (e.g. VP Engineering, CTO).")
     linkedin_search_query: Optional[str] = Field(None, description="Ready-to-use LinkedIn Boolean search query for finding decision makers.")
-    buying_triggers: Optional[str] = Field(None, description="Recent growth signals, funding, leadership hires, or compliance milestones ('Why Now?').")
-    current_vendors_and_displacement: Optional[str] = Field(None, description="Identified competitor tools/vendors used & recommended displacement pitch angle.")
+    buying_triggers: Optional[str] = Field(None, description="Recent growth signals, funding, leadership hires, or compliance milestones.")
+    current_vendors_and_displacement: Optional[str] = Field(None, description="Identified competitor tools or vendors used and recommended displacement pitch angle.")
     conversation_starters: Optional[str] = Field(None, description="Top personalized talking hooks for cold calling or email opening.")
     objection_handling: Optional[str] = Field(None, description="Anticipated objections and strategic handles for sales reps.")
     estimated_budget_and_sales_cycle: Optional[str] = Field(None, description="Estimated annual software budget range and expected sales cycle timeframe.")
-    industry_fit_score: Optional[Any] = Field("20", description="Itemized score for Industry Fit (0-25).")
-    size_fit_score: Optional[Any] = Field("20", description="Itemized score for Company Size Fit (0-25).")
-    tech_match_score: Optional[Any] = Field("20", description="Itemized score for Tech Stack Match (0-25).")
-    growth_signal_score: Optional[Any] = Field("20", description="Itemized score for Growth Signals & Timing (0-25).")
+    industry_fit_score: Optional[str] = Field(None, description="Itemized score for Industry Fit as a string like '20' out of 25.")
+    size_fit_score: Optional[str] = Field(None, description="Itemized score for Company Size Fit as a string like '20' out of 25.")
+    tech_match_score: Optional[str] = Field(None, description="Itemized score for Tech Stack Match as a string like '20' out of 25.")
+    growth_signal_score: Optional[str] = Field(None, description="Itemized score for Growth Signals and Timing as a string like '20' out of 25.")
 
 
 class QualificationResult(BaseModel):
     """Structured output from the qualifier_node LLM call."""
 
     is_qualified: bool = Field(
-        True,
         description=(
             "True if the company described in the scraped text is a good "
             "prospect for the tenant based on their profile. "
@@ -101,15 +95,13 @@ class QualificationResult(BaseModel):
         )
     )
     reason: str = Field(
-        "Evaluated company profile against Ideal Customer Profile criteria.",
         description=(
             "One or two sentences explaining the qualification decision. "
             "Be specific about which signals drove the verdict."
         )
     )
-    confidence_score: Optional[Any] = Field(
-        0.85,
-        description="Model's confidence in the is_qualified verdict (0.0–1.0).",
+    confidence_score: str = Field(
+        description="Model confidence in the is_qualified verdict as a decimal string between 0.0 and 1.0, e.g. '0.85'.",
     )
     insights: BusinessInsights = Field(
         default_factory=BusinessInsights,

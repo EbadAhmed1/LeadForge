@@ -197,18 +197,31 @@ async def qualifier_node(
             config=lc_config,
         )
 
-        confidence_val = (
-            result.confidence_score
-            if isinstance(result.confidence_score, (int, float))
-            else 0.85
-        )
+        # Parse confidence score from string
+        try:
+            confidence_val = float(result.confidence_score)
+        except (ValueError, TypeError):
+            confidence_val = 0.85
+
         reason_str = result.reason or "Evaluated company profile against target ICP criteria."
+
+        insights_dict = {}
+        if result.insights:
+            insights_dict = result.insights.model_dump()
+
+        node_logger.info(
+            "Qualification complete",
+            is_qualified=result.is_qualified,
+            confidence=confidence_val,
+            reason=reason_str[:80],
+            insights_keys=list(k for k, v in insights_dict.items() if v),
+        )
 
         return {
             "tenant_profile": tenant_profile_dict,
             "is_qualified": bool(result.is_qualified),
             "qualification_reason": f"{reason_str} (confidence: {confidence_val:.0%})",
-            "business_insights": result.insights.model_dump() if hasattr(result, "insights") and result.insights else {},
+            "business_insights": insights_dict,
         }
 
     except Exception as exc:

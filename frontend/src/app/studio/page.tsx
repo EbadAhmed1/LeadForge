@@ -63,10 +63,10 @@ interface BusinessInsights {
   conversation_starters?: string | null;
   objection_handling?: string | null;
   estimated_budget_and_sales_cycle?: string | null;
-  industry_fit_score?: number | null;
-  size_fit_score?: number | null;
-  tech_match_score?: number | null;
-  growth_signal_score?: number | null;
+  industry_fit_score?: string | number | null;
+  size_fit_score?: string | number | null;
+  tech_match_score?: string | number | null;
+  growth_signal_score?: string | number | null;
 }
 
 interface ScrapedResult {
