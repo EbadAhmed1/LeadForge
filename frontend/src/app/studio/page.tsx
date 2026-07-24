@@ -681,19 +681,38 @@ export default function LeadStudioPage() {
                     </span>
                   )}
 
-                  {scrapedResult.is_qualified && (
-                    <button
-                      onClick={() => setLeadSaved(true)}
-                      className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 shadow-2xs ${
-                        leadSaved
-                          ? "bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0]"
-                          : "bg-[#C2410C] hover:bg-[#9A3412] text-white"
-                      }`}
-                    >
-                      {leadSaved ? <Check className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-                      {leadSaved ? "Saved to Profile!" : "Save Lead to Profile"}
-                    </button>
-                  )}
+                  <button
+                    onClick={async () => {
+                      setLeadSaved(true);
+                      try {
+                        const token = await getToken();
+                        if (token) {
+                          await fetch(`${API_BASE}/api/v1/leads/`, {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({
+                              company_name: scrapedResult.company_display_name,
+                              domain: scrapedResult.domain,
+                              status: scrapedResult.is_qualified ? "qualified" : "disqualified",
+                              qualification_reason: scrapedResult.qualification_reason,
+                              drafted_email: scrapedResult.drafted_email,
+                            }),
+                          }).catch(() => {});
+                        }
+                      } catch {}
+                    }}
+                    className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 shadow-2xs ${
+                      leadSaved
+                        ? "bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0]"
+                        : "bg-[#C2410C] hover:bg-[#9A3412] text-white"
+                    }`}
+                  >
+                    {leadSaved ? <Check className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+                    {leadSaved ? "Saved to Profile!" : "Save Lead to Profile"}
+                  </button>
                 </div>
               </div>
 
@@ -841,8 +860,8 @@ export default function LeadStudioPage() {
                 )}
               </div>
 
-              {/* Drafted Email — only shown when qualified */}
-              {scrapedResult.is_qualified && scrapedResult.drafted_email && (() => {
+              {/* Drafted Email */}
+              {scrapedResult.drafted_email && (() => {
                 const { subject, body } = parseDraftedEmail(scrapedResult.drafted_email);
                 return (
                   <div className="space-y-3 p-4 bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl text-xs">
@@ -875,8 +894,8 @@ export default function LeadStudioPage() {
                 );
               })()}
 
-              {/* Qualified but no email drafted */}
-              {scrapedResult.is_qualified && !scrapedResult.drafted_email && (
+              {/* No email drafted fallback */}
+              {!scrapedResult.drafted_email && (
                 <div className="p-4 bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl text-xs text-[#78716C] text-center">
                   Email drafting did not complete for this lead.
                   {scrapedResult.pipeline_error && (

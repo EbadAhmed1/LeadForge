@@ -69,12 +69,9 @@ def _after_qualifier(state: LeadState) -> str:
     """
     Route after qualifier_node:
       - If pipeline_error is set → END (LLM failure; don't proceed)
-      - If is_qualified is False → END (prospect not a fit)
-      - If is_qualified is True → drafter_node
+      - Always proceed to drafter_node to generate outreach email regardless of qualification verdict
     """
     if state.get("pipeline_error"):
-        return END
-    if not state.get("is_qualified"):
         return END
     return "drafter_node"
 

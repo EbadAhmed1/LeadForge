@@ -89,16 +89,30 @@ async def drafter_node(
     node_logger = logger.bind(node="drafter_node", tenant_id=state["tenant_id"])
 
     raw_text = state.get("raw_scraped_text") or ""
+    web_search = state.get("web_search_results") or ""
     tenant_profile = state.get("tenant_profile") or {}
     qualification_reason = state.get("qualification_reason") or ""
+    is_qualified = state.get("is_qualified")
 
     # ── Build prompt with all available context ───────────────────────────────
     tenant_name = tenant_profile.get("name", "Our Company")
+    
+    company_research = []
+    if raw_text.strip():
+        company_research.append(f"WEBSITE SCRAPE:\n{raw_text}")
+    if web_search.strip():
+        company_research.append(f"WEB SEARCH INTELLIGENCE:\n{web_search}")
+    
+    research_summary = "\n\n".join(company_research)
+
+    qual_status_str = "QUALIFIED" if is_qualified else "UNQUALIFIED / EXPLORATORY"
+    
     context = (
-        f"SENDER (our client): {tenant_name}\n\n"
-        f"WHY THIS PROSPECT IS QUALIFIED:\n{qualification_reason}\n\n"
-        f"PROSPECT RESEARCH:\n{raw_text}\n\n"
-        "Write the cold email now."
+        f"SENDER (our client): {tenant_name}\n"
+        f"PROSPECT EVALUATION STATUS: {qual_status_str}\n"
+        f"QUALIFICATION REASON / NOTES: {qualification_reason}\n\n"
+        f"PROSPECT RESEARCH:\n{research_summary}\n\n"
+        "Write a tailored, high-converting cold email now."
     )
 
     user_message = HumanMessage(content=context)
