@@ -114,7 +114,13 @@ function parseDraftedEmail(raw: string): { subject: string; body: string } {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function LeadStudioPage() {
-  const { getToken } = useAuth();
+  let getToken: (() => Promise<string | null>) | undefined;
+  try {
+    const auth = useAuth();
+    getToken = auth.getToken;
+  } catch {
+    getToken = async () => null;
+  }
 
   // ── ICP Profile State ─────────────────────────────────────────────────────
   const [profile, setProfile] = useState({
@@ -212,7 +218,7 @@ export default function LeadStudioPage() {
 
     try {
       // ── Step 1: Get Clerk auth token ──────────────────────────────────────
-      const token = await getToken();
+      const token = getToken ? await getToken() : null;
       if (!token) throw new Error("Not authenticated. Please sign in.");
 
       const headers: Record<string, string> = {
@@ -707,7 +713,7 @@ export default function LeadStudioPage() {
                     onClick={async () => {
                       setLeadSaved(true);
                       try {
-                        const token = await getToken();
+                        const token = getToken ? await getToken() : null;
                         if (token) {
                           await fetch(`${API_BASE}/api/v1/leads/`, {
                             method: "POST",
