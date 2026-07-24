@@ -104,11 +104,13 @@ async def qualifier_node(
     node_logger = logger.bind(node="qualifier_node", tenant_id=state["tenant_id"])
 
     raw_text = state.get("raw_scraped_text") or ""
-    if not raw_text.strip():
-        node_logger.warning("No scraped text available for qualification")
+    web_search = state.get("web_search_results") or ""
+
+    if not raw_text.strip() and not web_search.strip():
+        node_logger.warning("No scraped text or web search available for qualification")
         return {
             "is_qualified": False,
-            "qualification_reason": "No scraped content to analyse.",
+            "qualification_reason": "No scraped content or web search results to analyse.",
             "tenant_profile": None,
         }
 
@@ -160,12 +162,20 @@ async def qualifier_node(
     )
 
     # ── Build the LLM prompt ─────────────────────────────────────────────────
+    company_context_parts = []
+    if raw_text.strip():
+        company_context_parts.append(f"TARGET DOMAIN SCRAPED CONTENT:\n{raw_text}")
+    if web_search.strip():
+        company_context_parts.append(f"WEB-WIDE SEARCH INTELLIGENCE:\n{web_search}")
+
+    full_company_context = "\n\n".join(company_context_parts)
+
     user_message = HumanMessage(
         content=(
             f"TENANT PROFILE:\n{tenant_summary}\n\n"
-            f"SCRAPED COMPANY CONTENT:\n{raw_text}\n\n"
-            "Based on the above, is this company a good prospect for the tenant? "
-            "Provide your qualification decision with a specific reason."
+            f"COMPANY INTELLIGENCE CONTEXT:\n{full_company_context}\n\n"
+            "Based on the above company intelligence (both scraped website content and web-wide search), is this company a good prospect for the tenant? "
+            "Provide your qualification decision with a specific reason and extract all business insights."
         )
     )
 

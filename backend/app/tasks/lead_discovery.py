@@ -112,6 +112,8 @@ async def _run_graph_with_retry(
             {
                 "tenant_id": tenant_id,
                 "target_url": target_url,
+                "web_search_results": None,
+                "search_error": None,
                 "raw_scraped_text": None,
                 "scraper_error": None,
                 "tenant_profile": None,

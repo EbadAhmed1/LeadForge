@@ -73,6 +73,9 @@ class Settings(BaseSettings):
     # ─── Firecrawl Web Scraper ──────────────────────────────────────────────────────
     firecrawl_api_key: str = ""  # FIRECRAWL_API_KEY — get one at firecrawl.dev
 
+    # ─── Tavily Web Search Engine ─────────────────────────────────────────────────
+    tavily_api_key: str = ""     # TAVILY_API_KEY — get one at tavily.com
+
     # ─── LangSmith Tracing ─────────────────────────────────────────────────────────────────────
     # Set to "true" to enable LangSmith tracing (no code changes needed)
     langchain_tracing_v2: str = "false"

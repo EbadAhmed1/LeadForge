@@ -29,6 +29,10 @@ class LeadState(TypedDict):
     tenant_id: str
     target_url: str
 
+    # ─── Search node outputs ───────────────────────────────────────────────────
+    web_search_results: Optional[str]
+    search_error: Optional[str]
+
     # ─── Scraper node outputs ─────────────────────────────────────────────────
     raw_scraped_text: Optional[str]
     scraper_error: Optional[str]

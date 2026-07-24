@@ -45,6 +45,7 @@ from langgraph.graph import END, START, StateGraph
 from app.ai.nodes.drafter_node import drafter_node
 from app.ai.nodes.qualifier_node import qualifier_node
 from app.ai.nodes.scraper_node import scraper_node
+from app.ai.nodes.search_node import search_node
 from app.ai.state import LeadState
 
 
@@ -53,10 +54,13 @@ from app.ai.state import LeadState
 def _after_scraper(state: LeadState) -> str:
     """
     Route after scraper_node:
-      - If scraper failed or returned no text → END (nothing to process)
+      - If both scraper AND web search failed / returned no text → END
       - Otherwise → qualifier_node
     """
-    if state.get("scraper_error") or not state.get("raw_scraped_text"):
+    has_scraped = bool(state.get("raw_scraped_text"))
+    has_search = bool(state.get("web_search_results"))
+
+    if not has_scraped and not has_search:
         return END
     return "qualifier_node"
 
@@ -81,13 +85,15 @@ def _build_graph() -> StateGraph:
     graph = StateGraph(LeadState)
 
     # ── Register nodes ────────────────────────────────────────────────────────
+    graph.add_node("search_node", search_node)
     graph.add_node("scraper_node", scraper_node)
     graph.add_node("qualifier_node", qualifier_node)
     graph.add_node("drafter_node", drafter_node)
 
     # ── Edges ─────────────────────────────────────────────────────────────────
-    # START → scraper_node (unconditional)
-    graph.add_edge(START, "scraper_node")
+    # START → search_node → scraper_node
+    graph.add_edge(START, "search_node")
+    graph.add_edge("search_node", "scraper_node")
 
     # scraper_node → qualifier_node or END (conditional)
     graph.add_conditional_edges(
