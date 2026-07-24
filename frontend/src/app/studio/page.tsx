@@ -28,6 +28,12 @@ import {
   Handshake,
   DollarSign,
   XCircle,
+  Target,
+  Zap,
+  ShieldAlert,
+  MessageSquare,
+  BarChart3,
+  ExternalLink,
 } from "lucide-react";
 
 // ─── API base URL — set NEXT_PUBLIC_API_URL in your .env.local ────────────────
@@ -46,6 +52,19 @@ interface BusinessInsights {
   contact_email?: string | null;
   contact_phone?: string | null;
   expanding_teams?: string | null;
+
+  // 6 New Sales Intelligence Modules
+  target_personas?: string | null;
+  linkedin_search_query?: string | null;
+  buying_triggers?: string | null;
+  current_vendors_and_displacement?: string | null;
+  conversation_starters?: string | null;
+  objection_handling?: string | null;
+  estimated_budget_and_sales_cycle?: string | null;
+  industry_fit_score?: number | null;
+  size_fit_score?: number | null;
+  tech_match_score?: number | null;
+  growth_signal_score?: number | null;
 }
 
 interface ScrapedResult {
@@ -847,6 +866,145 @@ export default function LeadStudioPage() {
                       <p className="text-[#1C1917] font-medium">
                         {scrapedResult.insights.contact_phone}
                       </p>
+                    </div>
+                  )}
+
+                  {/* 🎯 Target Decision-Maker Personas */}
+                  {scrapedResult.insights.target_personas && (
+                    <div className="p-3.5 bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl space-y-1 sm:col-span-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-[#78716C]">
+                          <Target className="w-3.5 h-3.5 text-[#C2410C]" />
+                          Target Decision-Maker Personas
+                        </div>
+                      </div>
+                      <p className="text-[#1C1917] font-medium leading-relaxed">
+                        {scrapedResult.insights.target_personas}
+                      </p>
+                      {scrapedResult.insights.linkedin_search_query && (
+                        <div className="pt-2 flex items-center gap-2">
+                          <code className="text-[10px] font-mono bg-[#FFFFFF] px-2 py-1 rounded border border-[#E8E3D9] text-[#C2410C] truncate flex-1">
+                            {scrapedResult.insights.linkedin_search_query}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (scrapedResult.insights.linkedin_search_query) {
+                                navigator.clipboard.writeText(scrapedResult.insights.linkedin_search_query);
+                                setCopiedLinkedin(true);
+                                setTimeout(() => setCopiedLinkedin(false), 2000);
+                              }
+                            }}
+                            className="px-2 py-1 text-[10px] font-semibold bg-[#FFFFFF] border border-[#E8E3D9] hover:bg-[#F5F2EB] rounded text-[#1C1917] transition-colors shrink-0"
+                          >
+                            {copiedLinkedin ? "Copied!" : "Copy LinkedIn Search"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ⚡ Buying Triggers ("Why Now?") */}
+                  {scrapedResult.insights.buying_triggers && (
+                    <div className="p-3.5 bg-[#FFF7ED] border border-[#FFEDD5] rounded-xl space-y-1 sm:col-span-2 lg:col-span-1">
+                      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold text-[#C2410C]">
+                        <Zap className="w-3.5 h-3.5 text-[#C2410C]" />
+                        Buying Triggers ("Why Now?")
+                      </div>
+                      <p className="text-[#1C1917] font-medium leading-relaxed">
+                        {scrapedResult.insights.buying_triggers}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* 🛡️ Tech Displacement & Vendor Angles */}
+                  {scrapedResult.insights.current_vendors_and_displacement && (
+                    <div className="p-3.5 bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl space-y-1 sm:col-span-2 lg:col-span-3">
+                      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-[#78716C]">
+                        <ShieldAlert className="w-3.5 h-3.5 text-[#C2410C]" />
+                        Competitor Tools & Tech Displacement Angle
+                      </div>
+                      <p className="text-[#1C1917] font-medium leading-relaxed">
+                        {scrapedResult.insights.current_vendors_and_displacement}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* 💬 Conversation Starters & Objection Handling */}
+                  {(scrapedResult.insights.conversation_starters || scrapedResult.insights.objection_handling) && (
+                    <div className="p-3.5 bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl space-y-2 sm:col-span-2 lg:col-span-3">
+                      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-[#78716C]">
+                        <MessageSquare className="w-3.5 h-3.5 text-[#C2410C]" />
+                        Sales Rep Battlecard: Conversation Hooks & Objection Handling
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                        {scrapedResult.insights.conversation_starters && (
+                          <div className="p-2.5 bg-[#FFFFFF] border border-[#E8E3D9] rounded-lg">
+                            <span className="text-[10px] font-bold uppercase text-[#C2410C]">Talking Hooks:</span>
+                            <p className="text-[#1C1917] font-medium leading-relaxed mt-0.5">
+                              {scrapedResult.insights.conversation_starters}
+                            </p>
+                          </div>
+                        )}
+                        {scrapedResult.insights.objection_handling && (
+                          <div className="p-2.5 bg-[#FFFFFF] border border-[#E8E3D9] rounded-lg">
+                            <span className="text-[10px] font-bold uppercase text-[#78716C]">Anticipated Objections & Handles:</span>
+                            <p className="text-[#1C1917] font-medium leading-relaxed mt-0.5">
+                              {scrapedResult.insights.objection_handling}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 💰 Estimated Budget & Sales Cycle */}
+                  {scrapedResult.insights.estimated_budget_and_sales_cycle && (
+                    <div className="p-3.5 bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl space-y-1 sm:col-span-2 lg:col-span-3">
+                      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-[#78716C]">
+                        <DollarSign className="w-3.5 h-3.5 text-[#C2410C]" />
+                        Estimated Budget Tier & Sales Cycle Timeframe
+                      </div>
+                      <p className="text-[#1C1917] font-medium leading-relaxed">
+                        {scrapedResult.insights.estimated_budget_and_sales_cycle}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* 📊 Multi-Factor Itemized Score Breakdown */}
+                  {(scrapedResult.insights.industry_fit_score !== undefined ||
+                    scrapedResult.insights.size_fit_score !== undefined) && (
+                    <div className="p-3.5 bg-[#FAF7F2] border border-[#E8E3D9] rounded-xl space-y-2 sm:col-span-2 lg:col-span-3">
+                      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-[#78716C]">
+                        <BarChart3 className="w-3.5 h-3.5 text-[#C2410C]" />
+                        Itemized ICP Match Breakdown (0 - 100)
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                        <div className="p-2 bg-[#FFFFFF] border border-[#E8E3D9] rounded-lg">
+                          <span className="text-[10px] font-semibold text-[#78716C] block">Industry Fit</span>
+                          <span className="font-bold text-[#C2410C] text-sm">
+                            {scrapedResult.insights.industry_fit_score ?? 20} / 25
+                          </span>
+                        </div>
+                        <div className="p-2 bg-[#FFFFFF] border border-[#E8E3D9] rounded-lg">
+                          <span className="text-[10px] font-semibold text-[#78716C] block">Size Fit</span>
+                          <span className="font-bold text-[#C2410C] text-sm">
+                            {scrapedResult.insights.size_fit_score ?? 20} / 25
+                          </span>
+                        </div>
+                        <div className="p-2 bg-[#FFFFFF] border border-[#E8E3D9] rounded-lg">
+                          <span className="text-[10px] font-semibold text-[#78716C] block">Tech Match</span>
+                          <span className="font-bold text-[#C2410C] text-sm">
+                            {scrapedResult.insights.tech_match_score ?? 20} / 25
+                          </span>
+                        </div>
+                        <div className="p-2 bg-[#FFFFFF] border border-[#E8E3D9] rounded-lg">
+                          <span className="text-[10px] font-semibold text-[#78716C] block">Growth Signals</span>
+                          <span className="font-bold text-[#C2410C] text-sm">
+                            {scrapedResult.insights.growth_signal_score ?? 20} / 25
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>

@@ -105,13 +105,25 @@ async def drafter_node(
     
     research_summary = "\n\n".join(company_research)
 
-    qual_status_str = "QUALIFIED" if is_qualified else "UNQUALIFIED / EXPLORATORY"
-    
+    business_insights = state.get("business_insights") or {}
+    insights_str = ""
+    if isinstance(business_insights, dict) and business_insights:
+        parts = []
+        if business_insights.get("target_personas"):
+            parts.append(f"Target Personas: {business_insights['target_personas']}")
+        if business_insights.get("buying_triggers"):
+            parts.append(f"Buying Triggers / Growth Signals: {business_insights['buying_triggers']}")
+        if business_insights.get("current_vendors_and_displacement"):
+            parts.append(f"Tech Displacement Angle: {business_insights['current_vendors_and_displacement']}")
+        if parts:
+            insights_str = "\n".join(parts)
+
     context = (
         f"SENDER (our client): {tenant_name}\n"
         f"PROSPECT EVALUATION STATUS: {qual_status_str}\n"
-        f"QUALIFICATION REASON / NOTES: {qualification_reason}\n\n"
-        f"PROSPECT RESEARCH:\n{research_summary}\n\n"
+        f"QUALIFICATION REASON / NOTES: {qualification_reason}\n"
+        + (f"SALES INTELLIGENCE HIGHLIGHTS:\n{insights_str}\n\n" if insights_str else "\n")
+        + f"PROSPECT RESEARCH:\n{research_summary}\n\n"
         "Write a tailored, high-converting cold email now."
     )
 
