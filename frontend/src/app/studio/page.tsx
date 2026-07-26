@@ -114,7 +114,20 @@ function parseDraftedEmail(raw: string): { subject: string; body: string } {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function LeadStudioPage() {
-  const { getToken } = useAuth();
+  let authObj: { getToken: () => Promise<string | null> } | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    authObj = useAuth();
+  } catch {}
+
+  const getToken = async (): Promise<string | null> => {
+    try {
+      if (authObj && typeof authObj.getToken === "function") {
+        return await authObj.getToken();
+      }
+    } catch {}
+    return null;
+  };
 
   // ── ICP Profile State ─────────────────────────────────────────────────────
   const [profile, setProfile] = useState({
