@@ -717,15 +717,14 @@ export default function LeadStudioPage() {
                         await fetch(`${API_BASE}/api/v1/leads/`, {
                           method: "POST",
                           headers: saveHeaders,
-                            body: JSON.stringify({
-                              company_name: scrapedResult.company_display_name,
-                              domain: scrapedResult.domain,
-                              status: scrapedResult.is_qualified ? "qualified" : "disqualified",
-                              qualification_reason: scrapedResult.qualification_reason,
-                              drafted_email: scrapedResult.drafted_email,
-                            }),
-                          }).catch(() => {});
-                        }
+                          body: JSON.stringify({
+                            company_name: scrapedResult.company_display_name,
+                            domain: scrapedResult.domain,
+                            status: scrapedResult.is_qualified ? "qualified" : "disqualified",
+                            qualification_reason: scrapedResult.qualification_reason,
+                            drafted_email: scrapedResult.drafted_email,
+                          }),
+                        }).catch(() => {});
                       } catch {}
                     }}
                     className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 shadow-2xs ${
