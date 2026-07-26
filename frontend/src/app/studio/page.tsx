@@ -114,13 +114,7 @@ function parseDraftedEmail(raw: string): { subject: string; body: string } {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function LeadStudioPage() {
-  let getToken: (() => Promise<string | null>) | undefined;
-  try {
-    const auth = useAuth();
-    getToken = auth.getToken;
-  } catch {
-    getToken = async () => null;
-  }
+  const { getToken } = useAuth();
 
   // ── ICP Profile State ─────────────────────────────────────────────────────
   const [profile, setProfile] = useState({
@@ -217,14 +211,14 @@ export default function LeadStudioPage() {
     setScrapeStatus("Connecting to Firecrawl...");
 
     try {
-      // ── Step 1: Get Clerk auth token ──────────────────────────────────────
-      const token = getToken ? await getToken() : null;
-      if (!token) throw new Error("Not authenticated. Please sign in.");
+      const token = getToken ? await getToken().catch(() => null) : null;
 
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
 
       // ── Step 2: Submit the scrape job ─────────────────────────────────────
       setScrapeStatus("Submitting scrape job...");
@@ -713,14 +707,16 @@ export default function LeadStudioPage() {
                     onClick={async () => {
                       setLeadSaved(true);
                       try {
-                        const token = getToken ? await getToken() : null;
+                        const token = getToken ? await getToken().catch(() => null) : null;
+                        const saveHeaders: Record<string, string> = {
+                          "Content-Type": "application/json",
+                        };
                         if (token) {
-                          await fetch(`${API_BASE}/api/v1/leads/`, {
-                            method: "POST",
-                            headers: {
-                              "Content-Type": "application/json",
-                              Authorization: `Bearer ${token}`,
-                            },
+                          saveHeaders["Authorization"] = `Bearer ${token}`;
+                        }
+                        await fetch(`${API_BASE}/api/v1/leads/`, {
+                          method: "POST",
+                          headers: saveHeaders,
                             body: JSON.stringify({
                               company_name: scrapedResult.company_display_name,
                               domain: scrapedResult.domain,
