@@ -12,38 +12,83 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const userObj = {
-      email: email || "alex@company.com",
-      name: email ? email.split("@")[0] : "Alex Mercer",
-      signedIn: true,
-    };
-    if (typeof window !== "undefined") {
-      localStorage.setItem("leadforge_user", JSON.stringify(userObj));
-    }
-    setTimeout(() => {
-      setLoading(false);
+    setError(null);
+
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://leadforge-saas.duckdns.org";
+
+    try {
+      const res = await fetch(`${apiBase}/api/v1/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || "No account found with this email. Please register first.");
+      }
+
+      const data = await res.json();
+      const userObj = {
+        email: data.email,
+        name: data.full_name,
+        signedIn: true,
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("leadforge_user", JSON.stringify(userObj));
+        window.dispatchEvent(new Event("storage"));
+      }
       router.push("/");
-    }, 400);
+    } catch (err: any) {
+      setError(err.message || "Sign in failed.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDemoSignIn = () => {
+  const handleDemoSignIn = async () => {
     setLoading(true);
-    const userObj = {
-      email: "alex@cloudscale.io",
-      name: "Alex Mercer",
-      role: "VP of Outbound",
-      signedIn: true,
-    };
-    if (typeof window !== "undefined") {
-      localStorage.setItem("leadforge_user", JSON.stringify(userObj));
-    }
-    setTimeout(() => {
-      setLoading(false);
+    setError(null);
+
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://leadforge-saas.duckdns.org";
+    try {
+      const res = await fetch(`${apiBase}/api/v1/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: "alex@cloudscale.io",
+          password: "DemoUser123!",
+        }),
+      });
+
+      const data = res.ok
+        ? await res.json()
+        : { email: "alex@cloudscale.io", full_name: "Alex Mercer" };
+
+      const userObj = {
+        email: data.email,
+        name: data.full_name,
+        signedIn: true,
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("leadforge_user", JSON.stringify(userObj));
+        window.dispatchEvent(new Event("storage"));
+      }
       router.push("/");
-    }, 300);
+    } catch (err) {
+      console.error(err);
+      router.push("/");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

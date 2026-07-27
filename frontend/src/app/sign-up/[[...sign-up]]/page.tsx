@@ -11,77 +11,91 @@ export default function SignUpPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const userObj = {
-      email: email || "alex@company.com",
-      name: name || "Alex Mercer",
-      signedIn: true,
-    };
-    if (typeof window !== "undefined") {
-      localStorage.setItem("leadforge_user", JSON.stringify(userObj));
-    }
+    setError(null);
 
-    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "";
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const emailVal = email.trim() || "alex@company.com";
+    const nameVal = name.trim() || "Alex Mercer";
+    const passVal = password.length >= 8 ? password : "LeadForge123!";
 
-    fetch(`${apiBase}/api/v1/users/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: controller.signal,
-      body: JSON.stringify({
-        email: userObj.email,
-        full_name: userObj.name,
-        password: password.length >= 8 ? password : "LeadForge123!",
-        role: "member",
-      }),
-    })
-      .catch((err) => console.log("User DB sync notice:", err))
-      .finally(() => clearTimeout(timeoutId));
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://leadforge-saas.duckdns.org";
 
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const res = await fetch(`${apiBase}/api/v1/users/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: emailVal,
+          full_name: nameVal,
+          password: passVal,
+          role: "member",
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        if (res.status === 409) {
+          throw new Error("An account with this email already exists. Please sign in.");
+        }
+        throw new Error(errData.detail || "Registration failed. Please try again.");
+      }
+
+      const data = await res.json();
+      const userObj = {
+        email: data.email,
+        name: data.full_name,
+        signedIn: true,
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("leadforge_user", JSON.stringify(userObj));
+        window.dispatchEvent(new Event("storage"));
+      }
       router.push("/");
-    }, 350);
+    } catch (err: any) {
+      setError(err.message || "Registration error occurred.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDemoSignUp = () => {
+  const handleDemoSignUp = async () => {
     setLoading(true);
-    const userObj = {
-      email: "alex@cloudscale.io",
-      name: "Alex Mercer",
-      signedIn: true,
-    };
-    if (typeof window !== "undefined") {
-      localStorage.setItem("leadforge_user", JSON.stringify(userObj));
-    }
+    setError(null);
 
-    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "";
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://leadforge-saas.duckdns.org";
+    try {
+      const res = await fetch(`${apiBase}/api/v1/users/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: "alex@cloudscale.io",
+          full_name: "Alex Mercer",
+          password: "DemoUser123!",
+          role: "member",
+        }),
+      });
 
-    fetch(`${apiBase}/api/v1/users/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: controller.signal,
-      body: JSON.stringify({
-        email: userObj.email,
-        full_name: userObj.name,
-        password: "DemoUser123!",
-        role: "member",
-      }),
-    })
-      .catch((err) => console.log("Demo user DB sync notice:", err))
-      .finally(() => clearTimeout(timeoutId));
-
-    setTimeout(() => {
-      setLoading(false);
+      const data = res.ok ? await res.json() : { email: "alex@cloudscale.io", full_name: "Alex Mercer" };
+      const userObj = {
+        email: data.email || "alex@cloudscale.io",
+        name: data.full_name || "Alex Mercer",
+        signedIn: true,
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("leadforge_user", JSON.stringify(userObj));
+        window.dispatchEvent(new Event("storage"));
+      }
       router.push("/");
-    }, 300);
+    } catch (err) {
+      console.error(err);
+      router.push("/");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
