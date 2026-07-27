@@ -13,7 +13,7 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const userObj = {
@@ -24,13 +24,28 @@ export default function SignUpPage() {
     if (typeof window !== "undefined") {
       localStorage.setItem("leadforge_user", JSON.stringify(userObj));
     }
-    setTimeout(() => {
-      setLoading(false);
-      router.push("/");
-    }, 400);
+
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "https://leadforge-saas.duckdns.org";
+      await fetch(`${apiBase}/api/v1/users/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: userObj.email,
+          full_name: userObj.name,
+          password: password.length >= 8 ? password : "LeadForge123!",
+          role: "member",
+        }),
+      });
+    } catch (err) {
+      console.error("Database user profile sync error:", err);
+    }
+
+    setLoading(false);
+    router.push("/");
   };
 
-  const handleDemoSignUp = () => {
+  const handleDemoSignUp = async () => {
     setLoading(true);
     const userObj = {
       email: "alex@cloudscale.io",
@@ -40,10 +55,25 @@ export default function SignUpPage() {
     if (typeof window !== "undefined") {
       localStorage.setItem("leadforge_user", JSON.stringify(userObj));
     }
-    setTimeout(() => {
-      setLoading(false);
-      router.push("/");
-    }, 300);
+
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "https://leadforge-saas.duckdns.org";
+      await fetch(`${apiBase}/api/v1/users/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: userObj.email,
+          full_name: userObj.name,
+          password: "DemoUser123!",
+          role: "member",
+        }),
+      });
+    } catch (err) {
+      console.error("Database demo user sync error:", err);
+    }
+
+    setLoading(false);
+    router.push("/");
   };
 
   return (
