@@ -288,6 +288,26 @@ export default function LeadStudioPage() {
           const insights: BusinessInsights = data.business_insights ?? {};
           const displayName = domainToDisplayName(domain);
 
+          const incrementUserScrapeCount = () => {
+            try {
+              let userKey = "guest";
+              const stored = localStorage.getItem("leadforge_user");
+              if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed?.email || parsed?.name) {
+                  userKey = parsed.email || parsed.name;
+                }
+              }
+              const storageKey = `leadforge_scrapes_${userKey}`;
+              const current = parseInt(localStorage.getItem(storageKey) || "0", 10);
+              const updated = current + 1;
+              localStorage.setItem(storageKey, String(updated));
+              window.dispatchEvent(new Event("leadforge_scrape_updated"));
+            } catch (e) {
+              console.error(e);
+            }
+          };
+
           setScrapedResult({
             domain,
             company_display_name: displayName,
@@ -303,6 +323,7 @@ export default function LeadStudioPage() {
             pipeline_error: data.pipeline_error ?? null,
           });
           setLeadSaved(false);
+          incrementUserScrapeCount();
           break;
         }
 
