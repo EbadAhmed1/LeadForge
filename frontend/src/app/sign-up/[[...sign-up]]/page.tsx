@@ -13,7 +13,7 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const userObj = {
@@ -25,27 +25,31 @@ export default function SignUpPage() {
       localStorage.setItem("leadforge_user", JSON.stringify(userObj));
     }
 
-    try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "https://leadforge-saas.duckdns.org";
-      await fetch(`${apiBase}/api/v1/users/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: userObj.email,
-          full_name: userObj.name,
-          password: password.length >= 8 ? password : "LeadForge123!",
-          role: "member",
-        }),
-      });
-    } catch (err) {
-      console.error("Database user profile sync error:", err);
-    }
+    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "";
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-    setLoading(false);
-    router.push("/");
+    fetch(`${apiBase}/api/v1/users/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        email: userObj.email,
+        full_name: userObj.name,
+        password: password.length >= 8 ? password : "LeadForge123!",
+        role: "member",
+      }),
+    })
+      .catch((err) => console.log("User DB sync notice:", err))
+      .finally(() => clearTimeout(timeoutId));
+
+    setTimeout(() => {
+      setLoading(false);
+      router.push("/");
+    }, 350);
   };
 
-  const handleDemoSignUp = async () => {
+  const handleDemoSignUp = () => {
     setLoading(true);
     const userObj = {
       email: "alex@cloudscale.io",
@@ -56,24 +60,28 @@ export default function SignUpPage() {
       localStorage.setItem("leadforge_user", JSON.stringify(userObj));
     }
 
-    try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "https://leadforge-saas.duckdns.org";
-      await fetch(`${apiBase}/api/v1/users/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: userObj.email,
-          full_name: userObj.name,
-          password: "DemoUser123!",
-          role: "member",
-        }),
-      });
-    } catch (err) {
-      console.error("Database demo user sync error:", err);
-    }
+    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "";
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-    setLoading(false);
-    router.push("/");
+    fetch(`${apiBase}/api/v1/users/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        email: userObj.email,
+        full_name: userObj.name,
+        password: "DemoUser123!",
+        role: "member",
+      }),
+    })
+      .catch((err) => console.log("Demo user DB sync notice:", err))
+      .finally(() => clearTimeout(timeoutId));
+
+    setTimeout(() => {
+      setLoading(false);
+      router.push("/");
+    }, 300);
   };
 
   return (
