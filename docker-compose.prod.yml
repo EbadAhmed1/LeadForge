@@ -11,7 +11,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-leadforge_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # No external ports — only accessible by other containers
+    ports:
+      - "127.0.0.1:5432:5432"  # Exposed only to host loopback for SSH tunneling
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-leadforge} -d ${POSTGRES_DB:-leadforge_db}"]
       interval: 5s
