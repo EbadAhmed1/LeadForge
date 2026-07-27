@@ -13,6 +13,7 @@ interface UserState {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [user, setUser] = useState<UserState | null>(null);
   const [scrapeCount, setScrapeCount] = useState<number>(0);
 
   useEffect(() => {
