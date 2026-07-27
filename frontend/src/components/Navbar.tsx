@@ -117,7 +117,7 @@ export default function Navbar() {
               </span>
 
               {/* Active Status Indicator */}
-              <span className="w-2.5 h-2.5 rounded-full bg-[#84CC16] animate-pulse shrink-0" title="Active Pro Workspace" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#84CC16] animate-pulse shrink-0" title="Active Basic Workspace" />
 
               {/* Power / Sign Out Button */}
               <button

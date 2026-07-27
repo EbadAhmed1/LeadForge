@@ -47,9 +47,9 @@ export default function Sidebar() {
             <p className="text-xs font-semibold text-[#1C1917] truncate">
               {user?.name || user?.email?.split("@")[0] || "ebadahmed200005"}
             </p>
-            <p className="text-[10px] text-[#047857] font-medium flex items-center gap-1">
+            <p className="text-[10px] text-[#57534E] font-medium flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-[#84CC16] animate-pulse shrink-0" />
-              Pro Workspace
+              Basic Workspace
             </p>
           </div>
         </div>
