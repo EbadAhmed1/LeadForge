@@ -20,10 +20,10 @@ export default function LandingPage() {
 
         {/* Main Headline */}
         <div className="space-y-3 max-w-5xl">
-          <h1 className="font-serif text-5xl sm:text-7xl lg:text-8xl font-normal tracking-tight text-[#1C1917]/90 leading-[1.05]">
+          <h1 className="font-serif text-3xl sm:text-6xl lg:text-8xl font-normal tracking-tight text-[#1C1917]/90 leading-[1.1]">
             Stop guessing who to call next.
           </h1>
-          <h2 className="font-serif text-5xl sm:text-7xl lg:text-8xl font-italic italic font-normal tracking-tight text-[#84CC16] leading-[1.05]">
+          <h2 className="font-serif text-3xl sm:text-6xl lg:text-8xl font-italic italic font-normal tracking-tight text-[#84CC16] leading-[1.1]">
             LeadForge finds them first.
           </h2>
         </div>

@@ -358,15 +358,15 @@ export default function LeadStudioPage() {
     <div className="min-h-screen flex flex-col bg-[#FAF7F2] text-[#1C1917]">
       <Navbar />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-w-0 w-full overflow-x-hidden">
         <Sidebar />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl space-y-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl space-y-8 min-w-0 w-full overflow-x-hidden">
           {/* Header */}
           <div className="border-b border-[#E8E3D9] pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#1C1917]">
+              <div className="flex items-center flex-wrap gap-2">
+                <h1 className="font-serif text-xl sm:text-3xl font-bold text-[#1C1917]">
                   Lead Scraper & Intelligence Studio
                 </h1>
                 <span className="px-2.5 py-0.5 text-[10px] uppercase font-bold rounded-full bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0]">
@@ -380,7 +380,7 @@ export default function LeadStudioPage() {
 
             <Link
               href="/saved-leads"
-              className="px-4 py-2.5 bg-[#FFFFFF] border border-[#E8E3D9] hover:bg-[#F5F2EB] text-xs font-semibold rounded-xl text-[#1C1917] transition-colors inline-flex items-center gap-2 shadow-2xs shrink-0"
+              className="px-4 py-2.5 bg-[#FFFFFF] border border-[#E8E3D9] hover:bg-[#F5F2EB] text-xs font-semibold rounded-xl text-[#1C1917] transition-colors inline-flex items-center gap-2 shadow-2xs shrink-0 self-start sm:self-auto"
             >
               <Bookmark className="w-4 h-4 text-[#C2410C]" />
               View Saved Leads Database
@@ -388,7 +388,7 @@ export default function LeadStudioPage() {
           </div>
 
           {/* Process Stepper */}
-          <div className="grid grid-cols-3 gap-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             {[
               { n: 1, title: "Target ICP Criteria", sub: "Industries, Size & Offering" },
               { n: 2, title: "Scrape Domain", sub: "Real Firecrawl Intelligence" },
