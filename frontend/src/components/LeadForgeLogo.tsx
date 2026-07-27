@@ -57,18 +57,18 @@ export default function LeadForgeLogo({ size = "md", showTag = true }: LeadForge
 
       {/* Brand Name & Tagline */}
       <div className="flex flex-col">
-        <div className="flex items-center gap-1.5 leading-none">
-          <span className={`font-serif ${titleSizes[size]} font-bold tracking-tight text-[#1C1917] group-hover:text-[#C2410C] transition-colors`}>
-            LeadForge
+        <div className="flex items-center gap-2 leading-none">
+          <span className={`font-sans ${titleSizes[size]} font-bold tracking-tight text-[#293548]`}>
+            Lead<span className="bg-gradient-to-r from-[#293548] via-[#C25E38] to-[#D97706] bg-clip-text text-transparent">Forge</span>
           </span>
           {showTag && (
-            <span className="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-[#1C1917] text-white shadow-2xs">
+            <span className="text-[10px] uppercase tracking-wider font-bold px-2.5 py-0.5 rounded-full bg-[#FFEDD5] text-[#C2410C] border border-[#FDBA74]/50 shadow-2xs">
               STUDIO
             </span>
           )}
         </div>
-        <span className="text-[10px] text-[#78716C] font-medium tracking-wide leading-tight mt-0.5">
-          B2B SaaS Platform
+        <span className="text-[11px] text-[#64748B] font-medium tracking-wide leading-tight mt-0.5">
+          AI Lead Discovery
         </span>
       </div>
     </Link>
