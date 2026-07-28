@@ -51,10 +51,11 @@ export default function SignInPage() {
   const handleSocialAuth = async (provider: "google" | "github") => {
     setLoading(true);
     const strategy = provider === "google" ? "oauth_google" : "oauth_github";
+    const clerkAny = clerk as any;
 
-    if (clerk && typeof clerk.authenticateWithRedirect === "function") {
+    if (clerkAny && typeof clerkAny.authenticateWithRedirect === "function") {
       try {
-        await clerk.authenticateWithRedirect({
+        await clerkAny.authenticateWithRedirect({
           strategy: strategy,
           redirectUrl: "/sso-callback",
           redirectUrlComplete: "/studio",
