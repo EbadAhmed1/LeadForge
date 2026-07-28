@@ -4,10 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Mail, User } from "lucide-react";
+import { useClerk } from "@clerk/nextjs";
 import LeadForgeLogo from "@/components/LeadForgeLogo";
 
 export default function SignUpPage() {
   const router = useRouter();
+  const clerk = useClerk();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,21 +48,29 @@ export default function SignUpPage() {
     }, 300);
   };
 
-  const handleSocialAuth = (provider: "google" | "github") => {
+  const handleSocialAuth = async (provider: "google" | "github") => {
     setLoading(true);
-    const userObj = {
-      email: provider === "google" ? "alex.mercer@gmail.com" : "alex-mercer@github.com",
-      name: provider === "google" ? "Alex Mercer (Google)" : "Alex Mercer (GitHub)",
-      signedIn: true,
-    };
-    if (typeof window !== "undefined") {
-      localStorage.setItem("leadforge_user", JSON.stringify(userObj));
-      window.dispatchEvent(new Event("storage"));
+    const strategy = provider === "google" ? "oauth_google" : "oauth_github";
+
+    if (clerk && typeof clerk.authenticateWithRedirect === "function") {
+      try {
+        await clerk.authenticateWithRedirect({
+          strategy: strategy,
+          redirectUrl: "/sso-callback",
+          redirectUrlComplete: "/studio",
+        });
+        return;
+      } catch (err) {
+        console.warn("Clerk OAuth redirect warning:", err);
+      }
     }
-    setTimeout(() => {
-      setLoading(false);
-      router.push("/");
-    }, 350);
+
+    // Direct OAuth Consent Screen Redirect
+    if (provider === "google") {
+      window.location.href = "https://accounts.google.com/o/oauth2/v2/auth?client_id=demo&redirect_uri=https://leadforge-saas.duckdns.org&response_type=code&scope=email%20profile";
+    } else {
+      window.location.href = "https://github.com/login/oauth/authorize?client_id=demo&scope=user:email";
+    }
   };
 
   return (
