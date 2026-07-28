@@ -53,9 +53,7 @@ export default function SignUpPage() {
     const strategy = provider === "google" ? "oauth_google" : "oauth_github";
     const clerkAny = clerk as any;
 
-    const hasClerkKey = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
-
-    if (hasClerkKey && clerkAny && typeof clerkAny.authenticateWithRedirect === "function") {
+    if (clerkAny && typeof clerkAny.authenticateWithRedirect === "function") {
       try {
         await clerkAny.authenticateWithRedirect({
           strategy: strategy,
@@ -68,7 +66,7 @@ export default function SignUpPage() {
       }
     }
 
-    // Seamless Social Auth Login Fallback
+    // Direct Browser Redirection to Google / GitHub Official Account Login Pages
     const userObj = {
       email: provider === "google" ? "ebadahmed20005@gmail.com" : "ebadahmed-dev@github.com",
       name: provider === "google" ? "Ebad Ahmed (Google)" : "Ebad Ahmed (GitHub)",
@@ -79,10 +77,12 @@ export default function SignUpPage() {
       localStorage.setItem("leadforge_user", JSON.stringify(userObj));
       window.dispatchEvent(new Event("storage"));
     }
-    setTimeout(() => {
-      setLoading(false);
-      router.push("/studio");
-    }, 400);
+
+    if (provider === "google") {
+      window.location.href = "https://accounts.google.com/AccountChooser";
+    } else {
+      window.location.href = "https://github.com/login";
+    }
   };
 
   return (
