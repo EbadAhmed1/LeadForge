@@ -100,13 +100,18 @@ async def clerk_webhook(
         )
 
     event_type: str = payload.get("type", "")
-    if event_type not in ("user.created", "user.updated"):
+    if event_type not in ("user.created", "user.updated", "user.deleted"):
         return {"status": "ignored", "event": event_type}
 
     data: dict = payload.get("data", {})
     clerk_user_id: str = data.get("id", "")
     if not clerk_user_id:
         raise HTTPException(status_code=400, detail="Missing user id in webhook payload")
+
+    # ── Handle deletion separately — no email extraction needed ──────────────
+    if event_type == "user.deleted":
+        await _handle_user_deleted(clerk_user_id, session)
+        return {"status": "ok", "event": event_type}
 
     # ── Extract real email ────────────────────────────────────────────────────
     email_objects: list[dict] = data.get("email_addresses", [])
@@ -158,3 +163,32 @@ async def clerk_webhook(
 
     # session.commit() is handled by get_async_session after this handler returns
     return {"status": "ok", "event": event_type}
+
+
+async def _handle_user_deleted(
+    clerk_user_id: str,
+    session: AsyncSession,
+) -> None:
+    """
+    Soft-deletes the UserProfile matching this Clerk user.
+    We keep the row (is_active=False) so that historical leads and job
+    records that reference this user's tenant are not orphaned.
+    """
+    placeholder_email = f"{clerk_user_id}@clerk.user"
+    result = await session.execute(
+        select(UserProfile).where(
+            UserProfile.email.like(f"%@clerk.user")
+            | UserProfile.email.like(f"{clerk_user_id}%")
+        )
+    )
+    # Narrow down: match by placeholder email pattern or find exact placeholder
+    all_candidates = result.scalars().all()
+    user = next(
+        (u for u in all_candidates if u.email == placeholder_email or clerk_user_id in u.email),
+        None,
+    )
+    if user:
+        user.is_active = False
+        logger.info("Clerk webhook: soft-deleted user profile", clerk_id=clerk_user_id, email=user.email)
+    else:
+        logger.warning("Clerk webhook: user.deleted — no matching profile found", clerk_id=clerk_user_id)
