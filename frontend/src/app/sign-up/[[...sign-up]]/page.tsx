@@ -4,13 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, KeyRound, Lock, Mail, User } from "lucide-react";
-import { useSignUp, useClerk } from "@clerk/nextjs";
+import { useSignUp } from "@clerk/nextjs";
 import LeadForgeLogo from "@/components/LeadForgeLogo";
 
 export default function SignUpPage() {
   const router = useRouter();
   const { signUp, fetchStatus } = useSignUp();
-  const { setActive } = useClerk();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,14 +25,24 @@ export default function SignUpPage() {
     setError(null);
     try {
       const parts = name.trim().split(" ");
-      await signUp.create({
+      const { error: signUpError } = await signUp.password({
         emailAddress: email,
         password,
         firstName: parts[0],
         lastName: parts.slice(1).join(" ") || undefined,
       });
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      setVerifying(true);
+      if (signUpError) {
+        setError(signUpError.message);
+        return;
+      }
+      if (signUp.status !== "complete") {
+        const { error: sendError } = await signUp.verifications.sendEmailCode();
+        if (sendError) { setError(sendError.message); return; }
+        setVerifying(true);
+      } else {
+        await signUp.finalize();
+        router.push("/studio");
+      }
     } catch (err: unknown) {
       const clerkErr = err as { errors?: Array<{ message: string }> };
       setError(clerkErr.errors?.[0]?.message ?? "Sign up failed. Please try again.");
@@ -48,11 +57,11 @@ export default function SignUpPage() {
     setLoading(true);
     setError(null);
     try {
-      const result = await signUp.attemptEmailAddressVerification({ code });
-      if (result.status === "complete" && result.createdSessionId) {
-        await setActive({ session: result.createdSessionId });
-        router.push("/studio");
-      }
+      const { error: verifyError } = await signUp.verifications.verifyEmailCode({ code });
+      if (verifyError) { setError(verifyError.message); return; }
+      const { error: finalizeError } = await signUp.finalize();
+      if (finalizeError) { setError(finalizeError.message); return; }
+      router.push("/studio");
     } catch (err: unknown) {
       const clerkErr = err as { errors?: Array<{ message: string }> };
       setError(clerkErr.errors?.[0]?.message ?? "Verification failed. Please try again.");
