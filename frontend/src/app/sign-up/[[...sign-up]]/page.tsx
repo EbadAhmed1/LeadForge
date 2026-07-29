@@ -2,52 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Mail, User } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useSignUp } from "@clerk/nextjs";
 import LeadForgeLogo from "@/components/LeadForgeLogo";
 
 export default function SignUpPage() {
-  const router = useRouter();
   const { signUp, fetchStatus } = useSignUp();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [socialError, setSocialError] = useState<string | null>(null);
-
-  const handleSignUp = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    const userObj = {
-      email: email || "alex@company.com",
-      name: name || "Alex Mercer",
-      signedIn: true,
-    };
-    if (typeof window !== "undefined") {
-      localStorage.setItem("leadforge_user", JSON.stringify(userObj));
-    }
-    setTimeout(() => {
-      setLoading(false);
-      router.push("/");
-    }, 400);
-  };
-
-  const handleDemoSignUp = () => {
-    setLoading(true);
-    const userObj = {
-      email: "alex@cloudscale.io",
-      name: "Alex Mercer",
-      signedIn: true,
-    };
-    if (typeof window !== "undefined") {
-      localStorage.setItem("leadforge_user", JSON.stringify(userObj));
-    }
-    setTimeout(() => {
-      setLoading(false);
-      router.push("/");
-    }, 300);
-  };
 
   const handleSocialAuth = async (provider: "google" | "github") => {
     setSocialError(null);
@@ -110,65 +72,9 @@ export default function SignUpPage() {
           <div>
             <h3 className="font-serif text-2xl font-bold text-[#1C1917]">Register Account</h3>
             <p className="text-xs text-[#78716C] mt-1">
-              Set up your account to start generating B2B lead intelligence.
+              Continue with your Google or GitHub account to start generating B2B lead intelligence.
             </p>
           </div>
-
-          <form onSubmit={handleSignUp} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#57534E]">Full Name</label>
-              <div className="relative">
-                <User className="w-4 h-4 absolute left-3 top-2.5 text-[#78716C]" />
-                <input
-                  type="text"
-                  required
-                  placeholder="Alex Mercer"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs bg-[#FAF7F2] border border-[#E8E3D9] rounded-lg text-[#1C1917] focus:outline-none focus:border-[#C2410C]"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#57534E]">Work Email</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3 top-2.5 text-[#78716C]" />
-                <input
-                  type="email"
-                  required
-                  placeholder="alex@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs bg-[#FAF7F2] border border-[#E8E3D9] rounded-lg text-[#1C1917] focus:outline-none focus:border-[#C2410C]"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#57534E]">Password</label>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3 top-2.5 text-[#78716C]" />
-                <input
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs bg-[#FAF7F2] border border-[#E8E3D9] rounded-lg text-[#1C1917] focus:outline-none focus:border-[#C2410C]"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 bg-[#C2410C] hover:bg-[#9A3412] text-white text-xs font-semibold rounded-xl transition-colors shadow-xs flex items-center justify-center gap-2"
-            >
-              {loading ? "Creating account..." : "Create Workspace Account"}
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
 
           {/* Social SSO Options */}
           <div className="space-y-2">
@@ -216,21 +122,6 @@ export default function SignUpPage() {
               <p className="text-[11px] font-medium text-red-600">{socialError}</p>
             ) : null}
           </div>
-
-          <div className="relative flex items-center justify-center">
-            <div className="border-t border-[#E8E3D9] w-full" />
-            <span className="bg-[#FFFFFF] px-3 text-[10px] text-[#78716C] uppercase tracking-wider absolute">
-              OR QUICK ACCESS
-            </span>
-          </div>
-
-          <button
-            onClick={handleDemoSignUp}
-            className="w-full py-2.5 bg-[#F5F2EB] hover:bg-[#E8E3D9] text-[#1C1917] border border-[#E8E3D9] text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
-          >
-            <CheckCircle2 className="w-4 h-4 text-[#047857]" />
-            Instant Demo Registration
-          </button>
 
           <p className="text-center text-xs text-[#78716C]">
             Already have an account?{" "}

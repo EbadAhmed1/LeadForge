@@ -2,52 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Mail } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useSignIn } from "@clerk/nextjs";
 import LeadForgeLogo from "@/components/LeadForgeLogo";
 
 export default function SignInPage() {
-  const router = useRouter();
   const { signIn, fetchStatus } = useSignIn();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [socialError, setSocialError] = useState<string | null>(null);
-
-  const handleSignIn = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    const userObj = {
-      email: email || "alex@company.com",
-      name: email ? email.split("@")[0] : "Alex Mercer",
-      signedIn: true,
-    };
-    if (typeof window !== "undefined") {
-      localStorage.setItem("leadforge_user", JSON.stringify(userObj));
-    }
-    setTimeout(() => {
-      setLoading(false);
-      router.push("/");
-    }, 400);
-  };
-
-  const handleDemoSignIn = () => {
-    setLoading(true);
-    const userObj = {
-      email: "alex@cloudscale.io",
-      name: "Alex Mercer",
-      role: "VP of Outbound",
-      signedIn: true,
-    };
-    if (typeof window !== "undefined") {
-      localStorage.setItem("leadforge_user", JSON.stringify(userObj));
-    }
-    setTimeout(() => {
-      setLoading(false);
-      router.push("/");
-    }, 300);
-  };
 
   const handleSocialAuth = async (provider: "google" | "github") => {
     setSocialError(null);
@@ -110,55 +72,9 @@ export default function SignInPage() {
           <div>
             <h3 className="font-serif text-2xl font-bold text-[#1C1917]">Sign in to Workspace</h3>
             <p className="text-xs text-[#78716C] mt-1">
-              Enter your work credentials to access your lead intelligence stream.
+              Continue with your Google or GitHub account to access your lead intelligence stream.
             </p>
           </div>
-
-          <form onSubmit={handleSignIn} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#57534E]">Work Email</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3 top-2.5 text-[#78716C]" />
-                <input
-                  type="email"
-                  required
-                  placeholder="alex@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs bg-[#FAF7F2] border border-[#E8E3D9] rounded-lg text-[#1C1917] focus:outline-none focus:border-[#C2410C]"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs">
-                <label className="font-semibold text-[#57534E]">Password</label>
-                <a href="#" className="text-[#C2410C] hover:underline text-[11px]">
-                  Forgot password?
-                </a>
-              </div>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3 top-2.5 text-[#78716C]" />
-                <input
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs bg-[#FAF7F2] border border-[#E8E3D9] rounded-lg text-[#1C1917] focus:outline-none focus:border-[#C2410C]"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 bg-[#C2410C] hover:bg-[#9A3412] text-white text-xs font-semibold rounded-xl transition-colors shadow-xs flex items-center justify-center gap-2"
-            >
-              {loading ? "Signing in..." : "Sign In to Workspace"}
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
 
           {/* Social SSO Options */}
           <div className="space-y-2">
@@ -206,21 +122,6 @@ export default function SignInPage() {
               <p className="text-[11px] font-medium text-red-600">{socialError}</p>
             ) : null}
           </div>
-
-          <div className="relative flex items-center justify-center">
-            <div className="border-t border-[#E8E3D9] w-full" />
-            <span className="bg-[#FFFFFF] px-3 text-[10px] text-[#78716C] uppercase tracking-wider absolute">
-              OR QUICK ACCESS
-            </span>
-          </div>
-
-          <button
-            onClick={handleDemoSignIn}
-            className="w-full py-2.5 bg-[#F5F2EB] hover:bg-[#E8E3D9] text-[#1C1917] border border-[#E8E3D9] text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
-          >
-            <CheckCircle2 className="w-4 h-4 text-[#047857]" />
-            Instant Demo Sign In (No Password Needed)
-          </button>
 
           <p className="text-center text-xs text-[#78716C]">
             Don&apos;t have an account?{" "}
