@@ -76,6 +76,10 @@ class Settings(BaseSettings):
     # ─── Tavily Web Search Engine ─────────────────────────────────────────────────
     tavily_api_key: str = ""     # TAVILY_API_KEY — get one at tavily.com
 
+    # ─── Clerk Webhook ─────────────────────────────────────────────────────────────
+    # Copy the Signing Secret from Clerk Dashboard → Webhooks → your endpoint
+    clerk_webhook_secret: str = ""  # CLERK_WEBHOOK_SECRET
+
     # ─── LangSmith Tracing ─────────────────────────────────────────────────────────────────────
     # Set to "true" to enable LangSmith tracing (no code changes needed)
     langchain_tracing_v2: str = "false"
