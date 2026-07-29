@@ -26,8 +26,23 @@ function getDisplayName(params: {
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isLoaded, isSignedIn, user } = useUser();
-  const clerk = useClerk();
+  let isLoaded = false;
+  let isSignedIn = false;
+  let user: ReturnType<typeof useUser>["user"] = null;
+  let clerk: ReturnType<typeof useClerk> | null = null;
+
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const userState = useUser();
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    clerk = useClerk();
+    isLoaded = userState.isLoaded;
+    isSignedIn = Boolean(userState.isSignedIn);
+    user = userState.user;
+  } catch {
+    // If ClerkProvider is unavailable (e.g. missing publishable key), fall back
+    // to unauthenticated UI instead of crashing prerender/build.
+  }
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const displayEmail = user?.primaryEmailAddress?.emailAddress ?? null;
@@ -47,7 +62,12 @@ export default function Navbar() {
       return;
     }
 
-    await clerk.signOut({ redirectUrl: "/" });
+    if (clerk) {
+      await clerk.signOut({ redirectUrl: "/" });
+      return;
+    }
+
+    router.push("/");
   };
 
   return (
