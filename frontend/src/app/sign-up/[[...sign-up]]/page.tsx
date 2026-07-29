@@ -63,8 +63,8 @@ export default function SignUpPage() {
     try {
       await signUp.sso({
         strategy,
-        redirectUrl: "/sso-callback",
-        redirectCallbackUrl: "/sso-callback",
+        redirectUrl: "/studio",
+        redirectCallbackUrl: "/sign-up",
       });
     } catch (err) {
       console.error("Clerk OAuth redirect failed:", err);
