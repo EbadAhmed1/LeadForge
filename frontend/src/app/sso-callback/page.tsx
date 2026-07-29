@@ -1,15 +1,25 @@
 "use client";
 
 import { AuthenticateWithRedirectCallback } from "@clerk/nextjs";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SSOCallbackPage() {
+  const router = useRouter();
   const hasClerkKey = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
-  if (!hasClerkKey) {
-    if (typeof window !== "undefined") {
-      window.location.href = "/studio";
+  useEffect(() => {
+    if (!hasClerkKey) {
+      router.replace("/studio");
     }
-    return null;
+  }, [hasClerkKey, router]);
+
+  if (!hasClerkKey) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
+        <p className="text-xs font-semibold text-[#57534E]">Redirecting...</p>
+      </div>
+    );
   }
 
   return (

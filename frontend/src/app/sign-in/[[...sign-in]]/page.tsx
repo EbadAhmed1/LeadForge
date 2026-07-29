@@ -4,15 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Mail } from "lucide-react";
-import { useClerk } from "@clerk/nextjs";
+import { useSignIn } from "@clerk/nextjs";
 import LeadForgeLogo from "@/components/LeadForgeLogo";
 
 export default function SignInPage() {
   const router = useRouter();
-  const clerk = useClerk();
+  const { isLoaded, signIn } = useSignIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [socialError, setSocialError] = useState<string | null>(null);
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,39 +50,26 @@ export default function SignInPage() {
   };
 
   const handleSocialAuth = async (provider: "google" | "github") => {
+    setSocialError(null);
     setLoading(true);
+
+    if (!isLoaded || !signIn) {
+      setLoading(false);
+      setSocialError("Authentication is still initializing. Please try again.");
+      return;
+    }
+
     const strategy = provider === "google" ? "oauth_google" : "oauth_github";
-    const clerkAny = clerk as any;
-
-    if (clerkAny && typeof clerkAny.authenticateWithRedirect === "function") {
-      try {
-        await clerkAny.authenticateWithRedirect({
-          strategy: strategy,
-          redirectUrl: "/sso-callback",
-          redirectUrlComplete: "/studio",
-        });
-        return;
-      } catch (err) {
-        console.warn("Clerk OAuth redirect warning:", err);
-      }
-    }
-
-    // Direct Browser Redirection to Google / GitHub Official Account Login Pages
-    const userObj = {
-      email: provider === "google" ? "ebadahmed20005@gmail.com" : "ebadahmed-dev@github.com",
-      name: provider === "google" ? "Ebad Ahmed (Google)" : "Ebad Ahmed (GitHub)",
-      provider: provider,
-      signedIn: true,
-    };
-    if (typeof window !== "undefined") {
-      localStorage.setItem("leadforge_user", JSON.stringify(userObj));
-      window.dispatchEvent(new Event("storage"));
-    }
-
-    if (provider === "google") {
-      window.location.href = "https://accounts.google.com/AccountChooser";
-    } else {
-      window.location.href = "https://github.com/login";
+    try {
+      await signIn.authenticateWithRedirect({
+        strategy,
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/studio",
+      });
+    } catch (err) {
+      console.error("Clerk OAuth redirect failed:", err);
+      setSocialError("Unable to start social login. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -178,6 +166,7 @@ export default function SignInPage() {
               <button
                 type="button"
                 onClick={() => handleSocialAuth("google")}
+                disabled={loading || !isLoaded}
                 className="w-full py-2 px-3 bg-[#FFFFFF] hover:bg-[#F5F2EB] text-[#1C1917] border border-[#E8E3D9] text-xs font-semibold rounded-xl transition-all shadow-2xs flex items-center justify-center gap-2"
               >
                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
@@ -204,6 +193,7 @@ export default function SignInPage() {
               <button
                 type="button"
                 onClick={() => handleSocialAuth("github")}
+                disabled={loading || !isLoaded}
                 className="w-full py-2 px-3 bg-[#FFFFFF] hover:bg-[#F5F2EB] text-[#1C1917] border border-[#E8E3D9] text-xs font-semibold rounded-xl transition-all shadow-2xs flex items-center justify-center gap-2"
               >
                 <svg className="w-4 h-4 text-[#181717] fill-current shrink-0" viewBox="0 0 24 24">
@@ -212,6 +202,9 @@ export default function SignInPage() {
                 GitHub
               </button>
             </div>
+            {socialError ? (
+              <p className="text-[11px] font-medium text-red-600">{socialError}</p>
+            ) : null}
           </div>
 
           <div className="relative flex items-center justify-center">
