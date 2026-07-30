@@ -3,41 +3,37 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Bookmark, CreditCard, UserCheck, Shield } from "lucide-react";
-
-interface UserState {
-  email?: string;
-  name?: string;
-  signedIn?: boolean;
-}
+import { Search, Bookmark, CreditCard } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [user, setUser] = useState<UserState | null>(null);
   const [scrapeCount, setScrapeCount] = useState<number>(0);
 
-  useEffect(() => {
-    const loadUserDataAndScrapes = () => {
-      try {
-        const stored = localStorage.getItem("leadforge_user");
-        let userKey = "guest";
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (parsed && parsed.signedIn) {
-            setUser(parsed);
-            userKey = parsed.email || parsed.name || "guest";
-          } else {
-            setUser(null);
-          }
-        } else {
-          setUser(null);
-        }
+  let clerkUser: ReturnType<typeof useUser>["user"] = null;
+  try {
+    const { user } = useUser();
+    clerkUser = user ?? null;
+  } catch {
+    // ClerkProvider unavailable (e.g. during static pre-render)
+  }
 
+  const displayName =
+    clerkUser?.fullName ||
+    clerkUser?.firstName ||
+    clerkUser?.emailAddresses?.[0]?.emailAddress?.split("@")[0] ||
+    "User";
+
+  const initials = displayName.charAt(0).toUpperCase();
+
+  useEffect(() => {
+    const userKey = clerkUser?.id ?? "guest";
+    const loadScrapes = () => {
+      try {
         const savedCount = localStorage.getItem(`leadforge_scrapes_${userKey}`);
         if (savedCount !== null) {
           setScrapeCount(parseInt(savedCount, 10) || 0);
         } else {
-          // Initialize fresh count for new user
           localStorage.setItem(`leadforge_scrapes_${userKey}`, "0");
           setScrapeCount(0);
         }
@@ -46,16 +42,11 @@ export default function Sidebar() {
       }
     };
 
-    loadUserDataAndScrapes();
-
-    const handleUpdate = () => loadUserDataAndScrapes();
-    window.addEventListener("storage", handleUpdate);
-    window.addEventListener("leadforge_scrape_updated", handleUpdate);
-    return () => {
-      window.removeEventListener("storage", handleUpdate);
-      window.removeEventListener("leadforge_scrape_updated", handleUpdate);
-    };
-  }, [pathname]);
+    loadScrapes();
+    window.addEventListener("leadforge_scrape_updated", loadScrapes);
+    return () => window.removeEventListener("leadforge_scrape_updated", loadScrapes);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clerkUser?.id]);
 
   const navItems = [
     { name: "Lead Scraper Studio", href: "/studio", icon: Search },
@@ -72,11 +63,11 @@ export default function Sidebar() {
         {/* User Profile Card matching Option 4 Avatar Badge */}
         <div className="p-3 bg-[#FFFFFF] border border-[#E8E3D9] rounded-xl flex items-center gap-3 shadow-2xs">
           <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#EA580C] via-[#C2410C] to-[#F59E0B] text-white font-bold text-xs flex items-center justify-center shadow-2xs shrink-0">
-            {user?.name ? user.name.charAt(0).toUpperCase() : user?.email ? user.email.charAt(0).toUpperCase() : "E"}
+            {initials}
           </div>
           <div className="min-w-0">
             <p className="text-xs font-semibold text-[#1C1917] truncate">
-              {user?.name || user?.email?.split("@")[0] || "ebadahmed200005"}
+              {displayName}
             </p>
             <p className="text-[10px] text-[#57534E] font-medium flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-[#84CC16] animate-pulse shrink-0" />
