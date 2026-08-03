@@ -21,12 +21,18 @@ export default function SignInPage() {
     setLoading(true);
     setError(null);
     try {
-      const { error: signInError } = await signIn.create({ identifier: email, password });
+      const { error: signInError } = await signIn.password({ emailAddress: email, password });
       if (signInError) {
         setError(signInError.message);
-      } else {
-        router.push("/studio");
+        return;
       }
+      // Activate the session and redirect
+      const { error: finalizeError } = await signIn.finalize();
+      if (finalizeError) {
+        setError(finalizeError.message);
+        return;
+      }
+      router.push("/studio");
     } catch (err: unknown) {
       const clerkErr = err as { errors?: Array<{ message: string }> };
       setError(clerkErr.errors?.[0]?.message ?? "Sign in failed. Please check your credentials.");
