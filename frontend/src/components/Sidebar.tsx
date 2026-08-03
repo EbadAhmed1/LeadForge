@@ -4,30 +4,18 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, Bookmark, CreditCard } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [scrapeCount, setScrapeCount] = useState<number>(0);
+  const { user } = useAuth();
 
-  let clerkUser: ReturnType<typeof useUser>["user"] = null;
-  try {
-    const { user } = useUser();
-    clerkUser = user ?? null;
-  } catch {
-    // ClerkProvider unavailable (e.g. during static pre-render)
-  }
-
-  const displayName =
-    clerkUser?.fullName ||
-    clerkUser?.firstName ||
-    clerkUser?.emailAddresses?.[0]?.emailAddress?.split("@")[0] ||
-    "User";
-
+  const displayName = user?.name || user?.email?.split("@")[0] || "User";
   const initials = displayName.charAt(0).toUpperCase();
 
   useEffect(() => {
-    const userKey = clerkUser?.id ?? "guest";
+    const userKey = user?.id ?? "guest";
     const loadScrapes = () => {
       try {
         const savedCount = localStorage.getItem(`leadforge_scrapes_${userKey}`);
@@ -46,7 +34,7 @@ export default function Sidebar() {
     window.addEventListener("leadforge_scrape_updated", loadScrapes);
     return () => window.removeEventListener("leadforge_scrape_updated", loadScrapes);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clerkUser?.id]);
+  }, [user?.id]);
 
   const navItems = [
     { name: "Lead Scraper Studio", href: "/studio", icon: Search },

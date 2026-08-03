@@ -19,7 +19,6 @@ from app.core.config import get_settings
 from app.core.redis import close_redis_pool, get_redis_pool
 from app.routers import generated_leads, health, target_companies, tenants, user_profiles
 from app.routers import auth as auth_router
-from app.routers import webhooks as webhooks_router
 
 settings = get_settings()
 logger = structlog.get_logger(__name__)
@@ -97,7 +96,6 @@ def create_app() -> FastAPI:
     # ─── Routers ──────────────────────────────────────────────────────────────
     app.include_router(health.router, prefix=API_V1_PREFIX)
     app.include_router(auth_router.router, prefix=API_V1_PREFIX)
-    app.include_router(webhooks_router.router, prefix=API_V1_PREFIX)
     app.include_router(tenants.router, prefix=API_V1_PREFIX)
     app.include_router(user_profiles.router, prefix=API_V1_PREFIX)
     app.include_router(target_companies.router, prefix=API_V1_PREFIX)

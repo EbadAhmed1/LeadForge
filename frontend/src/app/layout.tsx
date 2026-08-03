@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Newsreader } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
 import Providers from "./providers";
 import "./globals.css";
 
@@ -29,14 +28,12 @@ export const metadata: Metadata = {
   },
 };
 
-const hasClerkKey = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const content = (
+  return (
     <html
       lang="en"
       className={`${plusJakartaSans.variable} ${newsreader.variable} h-full antialiased`}
@@ -46,10 +43,4 @@ export default function RootLayout({
       </body>
     </html>
   );
-
-  if (hasClerkKey) {
-    return <ClerkProvider>{content}</ClerkProvider>;
-  }
-
-  return content;
 }

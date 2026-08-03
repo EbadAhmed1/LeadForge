@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     # ─── Security ─────────────────────────────────────────────────────────────
     secret_key: str = "CHANGE_ME_in_production"
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
+    access_token_expire_minutes: int = 43200  # 30 days
 
     # ─── Database ─────────────────────────────────────────────────────────────
     # Async URL (asyncpg) — used by the FastAPI application at runtime
@@ -79,6 +79,19 @@ class Settings(BaseSettings):
     # ─── Clerk Webhook ─────────────────────────────────────────────────────────────
     # Copy the Signing Secret from Clerk Dashboard → Webhooks → your endpoint
     clerk_webhook_secret: str = ""  # CLERK_WEBHOOK_SECRET
+
+    # ─── Email (Resend) ────────────────────────────────────────────────────────────
+    resend_api_key: str = ""           # RESEND_API_KEY
+    email_from: str = "LeadForge <onboarding@resend.dev>"  # EMAIL_FROM
+
+    # ─── GitHub OAuth ─────────────────────────────────────────────────────────────
+    github_client_id: str = ""         # GITHUB_CLIENT_ID
+    github_client_secret: str = ""     # GITHUB_CLIENT_SECRET
+
+    # ─── URLs ─────────────────────────────────────────────────────────────────────
+    # Used for OAuth redirect URIs and email links
+    backend_url: str = "https://leadforge-saas.duckdns.org"   # BACKEND_URL
+    frontend_url: str = "https://leadforge.vercel.app"        # FRONTEND_URL
 
     # ─── LangSmith Tracing ─────────────────────────────────────────────────────────────────────
     # Set to "true" to enable LangSmith tracing (no code changes needed)

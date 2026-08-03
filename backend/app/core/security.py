@@ -57,37 +57,14 @@ def create_access_token(subject: str, extra_claims: dict | None = None) -> str:
 
 def decode_access_token(token: str) -> dict:
     """
-    Decode and validate a JWT token.
-    Supports symmetric HS256 tokens and Clerk RS256 / external tokens.
+    Decode and validate an HS256 JWT access token.
 
     Raises:
-        JWTError: If the token is invalid or payload cannot be parsed.
+        JWTError: If the token is invalid, expired, or signature doesn't match.
     """
-    # 1. Try standard verification (for internal HS256 tokens)
-    try:
-        return jwt.decode(
-            token,
-            settings.secret_key,
-            algorithms=[settings.algorithm, "RS256"],
-            options={"verify_signature": False, "verify_aud": False},
-        )
-    except Exception:
-        pass
-
-    # 2. Direct base64url payload decoding fallback for external tokens (Clerk)
-    try:
-        import base64
-        import json
-
-        parts = token.split(".")
-        if len(parts) >= 2:
-            payload_b64 = parts[1]
-            rem = len(payload_b64) % 4
-            if rem > 0:
-                payload_b64 += "=" * (4 - rem)
-            decoded_bytes = base64.urlsafe_b64decode(payload_b64)
-            return json.loads(decoded_bytes.decode("utf-8"))
-    except Exception as exc:
-        raise JWTError(f"Invalid JWT structure: {exc}") from exc
-
-    raise JWTError("Could not decode token payload.")
+    return jwt.decode(
+        token,
+        settings.secret_key,
+        algorithms=[settings.algorithm],
+        options={"verify_aud": False},
+    )

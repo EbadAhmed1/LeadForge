@@ -3,7 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import Link from "next/link";
@@ -114,20 +114,7 @@ function parseDraftedEmail(raw: string): { subject: string; body: string } {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function LeadStudioPage() {
-  let authObj: { getToken: () => Promise<string | null> } | null = null;
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    authObj = useAuth();
-  } catch {}
-
-  const getToken = async (): Promise<string | null> => {
-    try {
-      if (authObj && typeof authObj.getToken === "function") {
-        return await authObj.getToken();
-      }
-    } catch {}
-    return null;
-  };
+  const { getToken } = useAuth();
 
   // ── ICP Profile State ─────────────────────────────────────────────────────
   const [profile, setProfile] = useState({

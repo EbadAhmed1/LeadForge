@@ -2,73 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useClerk, useUser } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth";
 import { ArrowRight, Search, Bookmark, CreditCard, Power, Menu, X } from "lucide-react";
 import LeadForgeLogo from "@/components/LeadForgeLogo";
 
-const hasClerkKey = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
-
-function getDisplayName(params: {
-  fullName?: string | null;
-  firstName?: string | null;
-  username?: string | null;
-  email?: string | null;
-}): string {
-  const { fullName, firstName, username, email } = params;
-  if (fullName && fullName.trim()) return fullName;
-  if (firstName && firstName.trim()) return firstName;
-  if (username && username.trim()) return username;
-  if (email && email.includes("@")) return email.split("@")[0];
-  return "Workspace";
-}
-
 export default function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
-  let isLoaded = false;
-  let isSignedIn = false;
-  let user: ReturnType<typeof useUser>["user"] = null;
-  let clerk: ReturnType<typeof useClerk> | null = null;
-
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const userState = useUser();
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    clerk = useClerk();
-    isLoaded = userState.isLoaded;
-    isSignedIn = Boolean(userState.isSignedIn);
-    user = userState.user;
-  } catch {
-    // If ClerkProvider is unavailable (e.g. missing publishable key), fall back
-    // to unauthenticated UI instead of crashing prerender/build.
-  }
+  const { user, isLoaded, isSignedIn, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const displayEmail = user?.primaryEmailAddress?.emailAddress ?? null;
-  const displayName = getDisplayName({
-    fullName: user?.fullName,
-    firstName: user?.firstName,
-    username: user?.username,
-    email: displayEmail,
-  });
+  const displayName = user?.name || user?.email?.split("@")[0] || "Workspace";
   const avatarLetter = displayName.charAt(0).toUpperCase();
-
-  const handleSignOut = async () => {
-    setMobileMenuOpen(false);
-
-    if (!hasClerkKey) {
-      router.push("/");
-      return;
-    }
-
-    if (clerk) {
-      await clerk.signOut({ redirectUrl: "/" });
-      return;
-    }
-
-    router.push("/");
-  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#E8E3D9] bg-[#FAF7F2]/95 backdrop-blur-md">
@@ -126,7 +71,7 @@ export default function Navbar() {
 
         {/* Desktop Action Buttons & Auth State */}
         <div className="hidden md:flex items-center gap-3">
-          {hasClerkKey && isLoaded && isSignedIn ? (
+          {isLoaded && isSignedIn ? (
             <div className="flex items-center gap-2.5 bg-[#FFFFFF] border border-[#E8E3D9] p-1.5 pl-1.5 pr-2 rounded-full shadow-2xs">
               <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#EA580C] via-[#C2410C] to-[#F59E0B] text-white font-bold text-xs flex items-center justify-center shadow-2xs">
                 {avatarLetter}
@@ -140,7 +85,7 @@ export default function Navbar() {
 
               <button
                   onClick={() => {
-                    void handleSignOut();
+                    void signOut();
                   }}
                 title="Sign Out"
                 className="p-1.5 bg-[#FAF7F2] hover:bg-red-50 text-[#78716C] hover:text-red-600 border border-[#E8E3D9] rounded-full transition-colors ml-0.5 shrink-0"
@@ -229,7 +174,7 @@ export default function Navbar() {
 
           {/* Mobile User Profile / Auth Action */}
           <div className="pt-3 border-t border-[#E8E3D9]">
-            {hasClerkKey && isLoaded && isSignedIn ? (
+            {isLoaded && isSignedIn ? (
               <div className="flex items-center justify-between p-3 bg-white border border-[#E8E3D9] rounded-xl shadow-2xs">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#EA580C] via-[#C2410C] to-[#F59E0B] text-white font-bold text-xs flex items-center justify-center">
@@ -247,7 +192,7 @@ export default function Navbar() {
                 </div>
                 <button
                   onClick={() => {
-                    void handleSignOut();
+                    void signOut();
                   }}
                   className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors"
                 >

@@ -42,6 +42,22 @@ class UserProfile(TenantBase, table=True):
         description="False = soft-deleted / deactivated user.",
     )
 
+    # ─── Email Verification & OAuth ───────────────────────────────────────────
+    email_verified: bool = Field(
+        default=False,
+        description="True once the user has verified their email address.",
+    )
+    oauth_provider: Optional[str] = Field(
+        default=None,
+        sa_column=Column(String(50), nullable=True),
+        description="OAuth provider name, e.g. 'github'.",
+    )
+    oauth_provider_id: Optional[str] = Field(
+        default=None,
+        sa_column=Column(String(255), nullable=True),
+        description="User ID returned by the OAuth provider.",
+    )
+
     # ─── Optional Profile Data ────────────────────────────────────────────────
     avatar_url: Optional[str] = Field(
         default=None,

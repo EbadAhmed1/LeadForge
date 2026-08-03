@@ -1,22 +1,44 @@
-"use client";
+﻿"use client";
 
+import { Suspense } from "react";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth, type AuthUser } from "@/lib/auth";
 
-/**
- * SSO callback fallback page.
- *
- * With Clerk v7's signIn.sso() / signUp.sso(), the token exchange is handled
- * by Clerk internally and the user is redirected to the `redirectUrl` param
- * (e.g. /studio) directly.  This page exists only as a safety net — if a user
- * lands here for any reason, we redirect them to /studio.
- */
-export default function SSOCallbackPage() {
+function SSOCallbackInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { setAuth } = useAuth();
 
   useEffect(() => {
-    router.replace("/studio");
-  }, [router]);
+    const token = searchParams.get("token");
+    const error = searchParams.get("error");
+
+    if (error) {
+      router.replace(`/sign-in?error=${error}`);
+      return;
+    }
+
+    if (token) {
+      try {
+        const [, payloadB64] = token.split(".");
+        const pad = payloadB64.length % 4 ? "=".repeat(4 - (payloadB64.length % 4)) : "";
+        const payload = JSON.parse(atob(payloadB64.replace(/-/g, "+").replace(/_/g, "/") + pad));
+        const user: AuthUser = {
+          id: payload.sub,
+          email: payload.email ?? "",
+          name: payload.name ?? "",
+          tenantId: payload.tenant_id ?? "",
+        };
+        setAuth(token, user);
+        router.replace("/studio");
+      } catch {
+        router.replace("/sign-in?error=invalid_token");
+      }
+    } else {
+      router.replace("/studio");
+    }
+  }, [searchParams, router, setAuth]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
@@ -25,5 +47,19 @@ export default function SSOCallbackPage() {
         <p className="text-xs font-semibold text-[#1C1917]">Completing login&hellip;</p>
       </div>
     </div>
+  );
+}
+
+export default function SSOCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
+          <div className="w-8 h-8 border-4 border-[#C2410C] border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <SSOCallbackInner />
+    </Suspense>
   );
 }
