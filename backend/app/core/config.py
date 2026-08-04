@@ -55,7 +55,11 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def cors_origins(self) -> list[str]:
-        return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
+        origins = [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
+        # Always include the frontend URL so the Vercel app can call the API
+        if self.frontend_url and self.frontend_url not in origins:
+            origins.append(self.frontend_url)
+        return origins
 
     # ─── Pagination ───────────────────────────────────────────────────────────
     default_page_size: int = 20
@@ -91,7 +95,7 @@ class Settings(BaseSettings):
     # ─── URLs ─────────────────────────────────────────────────────────────────────
     # Used for OAuth redirect URIs and email links
     backend_url: str = "https://leadforge-saas.duckdns.org"   # BACKEND_URL
-    frontend_url: str = "https://leadforge.vercel.app"        # FRONTEND_URL
+    frontend_url: str = "https://leadforge-io.vercel.app"     # FRONTEND_URL
 
     # ─── LangSmith Tracing ─────────────────────────────────────────────────────────────────────
     # Set to "true" to enable LangSmith tracing (no code changes needed)
