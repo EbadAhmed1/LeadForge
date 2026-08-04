@@ -21,7 +21,7 @@ import httpx
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -53,6 +53,15 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
 
+    @field_validator("password")
+    @classmethod
+    def password_length(cls, v: str) -> str:
+        if len(v.encode()) > 72:
+            raise ValueError("Password must be 72 characters or fewer.")
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters.")
+        return v
+
 
 class VerifyEmailRequest(BaseModel):
     email: EmailStr
@@ -62,6 +71,13 @@ class VerifyEmailRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+    @field_validator("password")
+    @classmethod
+    def password_length(cls, v: str) -> str:
+        if len(v.encode()) > 72:
+            raise ValueError("Password must be 72 characters or fewer.")
+        return v
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
