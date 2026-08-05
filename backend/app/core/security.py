@@ -9,25 +9,23 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
+import bcrypt as _bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from app.core.config import get_settings
 
 settings = get_settings()
 
 # ─── Password Hashing ─────────────────────────────────────────────────────────
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def hash_password(plain_password: str) -> str:
     """Hash a plain-text password using bcrypt."""
-    return pwd_context.hash(plain_password)
+    return _bcrypt.hashpw(plain_password.encode(), _bcrypt.gensalt()).decode()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Return True if the plain password matches the stored hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+    return _bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
 
 
 # ─── JWT ──────────────────────────────────────────────────────────────────────
